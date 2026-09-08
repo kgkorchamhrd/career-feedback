@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="대한상공회의소 지원서 맞춤 작성 및 진단 서비스">
-  <title>대한상공회의소 | 커리어 나침반</title>
+  <meta name="description" content="경기인력개발원 지원서 맞춤 작성 및 진단 서비스">
+  <title>경기인력개발원 | 커리어 나침반</title>
   <link rel="stylesheet" href="style.css">
   <!-- PDF.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -15,14 +15,16 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="#top">
+        <!-- 경기인력개발원 심볼/로고 UI -->
         <div class="korcham-logo">
           <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="45" stroke="#003366" stroke-width="8" fill="none"/>
-            <path d="M30 50 L45 65 L70 35" stroke="#0055B8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect width="100" height="100" rx="20" fill="#003366"/>
+            <path d="M25 68 L50 28 L75 68" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M38 52 L62 52" stroke="#66B2FF" stroke-width="6" stroke-linecap="round"/>
           </svg>
         </div>
         <div class="brand-text">
-          <span class="korcham-title">대한상공회의소</span>
+          <span class="korcham-title">경기인력개발원</span>
           <span class="service-title">커리어 나침반 ✦</span>
         </div>
       </a>
@@ -37,8 +39,8 @@
   <main id="top">
     <section class="title-band">
       <div class="hero-content">
-        <span class="hero-tag">KORCHAM CAREER NAVI</span>
-        <h1>내 경험으로 완성하는<br><b>대한상공회의소 맞춤 취업 지원서</b></h1>
+        <span class="hero-tag">KG HRD CAREER NAVI</span>
+        <h1>내 경험으로 완성하는<br><b>경기인력개발원 맞춤 취업 지원서</b></h1>
         <p>채용공고 요구사항과 실제 성과 경험을 정밀하게 연결해 최적의 지원서 초안을 완성해 드립니다.</p>
       </div>
     </section>
@@ -182,7 +184,9 @@
               </div>
             </div>
 
-            <input type="hidden" id="extractedPdfText">
+            <!-- PDF 추출 파싱 파이프라인 버퍼 -->
+            <input type="hidden" id="extractedResumePdfText">
+            <input type="hidden" id="extractedLetterPdfText">
             <input type="hidden" id="extractedPostPdfText">
 
             <div class="evidence-box">
@@ -201,7 +205,7 @@
           <section class="form-step" data-page="3" id="result" aria-live="polite">
             <div class="loading" id="loading">
               <div class="spinner"></div>
-              <h3>대한상공회의소 AI 엔진이 분석 중입니다</h3>
+              <h3>경기인력개발원 AI 엔진이 분석 중입니다</h3>
               <p id="loadText">제출된 경험 데이터를 직무 역량과 정밀 매칭하는 중입니다...</p>
             </div>
 
@@ -212,7 +216,9 @@
                   <h2><b id="roleLabel">사무행정</b> 맞춤 합격 전략</h2>
                   <p id="resultSummary"></p>
                 </div>
-                <button class="btn-copy" id="copyButton" type="button">📋 전체 결과 복사</button>
+                <div class="head-btn-group">
+                  <button class="btn-copy" id="copyButton" type="button">📋 전체 결과 복사</button>
+                </div>
               </div>
 
               <div class="score-card">
@@ -227,10 +233,14 @@
                 </div>
               </div>
 
+              <!-- 서류 자동 생성 및 다운로드 영역 -->
               <div class="draft-container">
                 <div class="draft-header">
-                  <h3>✨ AI 생성 맞춤 이력서 & 자기소개서 초안</h3>
-                  <span>본 초안을 복사하여 지원서 항목에 직접 활용해 보세요.</span>
+                  <div>
+                    <h3>✨ AI 생성 맞춤 이력서 & 자기소개서 초안</h3>
+                    <span>업로드하신 PDF 및 입력 데이터를 기반으로 완성된 서류입니다.</span>
+                  </div>
+                  <button class="btn-download" id="downloadDraftBtn" type="button">📥 완성된 서류 다운로드 (.txt)</button>
                 </div>
 
                 <div class="draft-section">
@@ -269,7 +279,7 @@
               </div>
 
               <div class="result-foot">
-                <span>대한상공회의소 훈련취업팀 지원 도구로 생성된 결과물입니다. 사실 관계를 점검 후 제출하세요.</span>
+                <span>경기인력개발원 훈련취업팀 지원 도구로 생성된 결과물입니다. 사실 관계를 점검 후 제출하세요.</span>
                 <button class="btn-secondary" id="restartButton" type="button">🔄 새로운 진단 시작</button>
               </div>
             </div>
@@ -282,10 +292,10 @@
   <footer>
     <div class="footer-inner">
       <div class="footer-logo">
-        <b>대한상공회의소 훈련취업팀</b>
-        <span>KORCHAM Job & Career Support Center</span>
+        <b>경기인력개발원 훈련취업팀</b>
+        <span>KG HRD Job & Career Support Center</span>
       </div>
-      <p>본 시스템은 사용자 개인정보를 저장하지 않습니다. · 문의: 대한상공회의소 훈련취업팀</p>
+      <p>본 시스템은 사용자 개인정보를 저장하지 않습니다. · 문의: 경기인력개발원 훈련취업팀</p>
     </div>
   </footer>
 
