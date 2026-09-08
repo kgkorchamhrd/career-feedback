@@ -1,9 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // PDF.js CORS 및 도메인 차단 문제를 완벽 차단하는 Blob Worker 설정
+  // PDF.js 인라인 Worker 설정
   if (window.pdfjsLib) {
-    const workerCode = `
-      importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');
-    `;
+    const workerCode = `importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js');`;
     const blob = new Blob([workerCode], { type: 'text/javascript' });
     pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
   }
@@ -47,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.innerHTML = a.map(x => `<li>${x}</li>`).join('');
   }
 
-  // PDF 텍스트 파싱 안정화 엔진
+  // PDF 텍스트 파싱 처리
   async function extractTextFromPdf(file) {
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -80,12 +78,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const text = await extractTextFromPdf(file);
       if (!text) {
-        statusEl.textContent = '⚠️ 텍스트를 읽을 수 없는 이미지형 PDF입니다.';
+        statusEl.textContent = '⚠️ 텍스트를 읽을 수 없는 스캔형 PDF입니다.';
         statusEl.style.color = '#E11D48';
         return;
       }
-      $(targetHiddenId).value += `\n[${file.name}]\n` + text;
-      statusEl.textContent = `✓ ${file.name} (텍스트 추출 완료)`;
+      $(targetHiddenId).value = text;
+      statusEl.textContent = `✓ ${file.name} (${text.length}자 추출 완료)`;
       statusEl.style.color = 'var(--blue)';
     } catch (err) {
       statusEl.textContent = '❌ 파일 처리 실패 (다른 PDF로 시도해 주세요)';
@@ -93,12 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // PDF 파일 업로드 이벤트 연결
-  $('resumePdf')?.addEventListener('change', () => handlePdfUpload('resumePdf', 'resumeStatus', 'extractedPdfText'));
-  $('letterPdf')?.addEventListener('change', () => handlePdfUpload('letterPdf', 'letterStatus', 'extractedPdfText'));
+  // PDF 파일 변경 이벤트
+  $('resumePdf')?.addEventListener('change', () => handlePdfUpload('resumePdf', 'resumeStatus', 'extractedResumePdfText'));
+  $('letterPdf')?.addEventListener('change', () => handlePdfUpload('letterPdf', 'letterStatus', 'extractedLetterPdfText'));
   $('postingPdf')?.addEventListener('change', () => handlePdfUpload('postingPdf', 'postingStatus', 'extractedPostPdfText'));
 
-  // 탭 제어
+  // 탭 변경 UI
   $('tabTextBtn')?.addEventListener('click', () => {
     $('textInputArea').classList.remove('hide');
     $('pdfInputArea').classList.add('hide');
@@ -137,11 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 버튼 이동 제어
+  // 버튼 제어
   document.querySelectorAll('[data-next]').forEach(b => {
     b.addEventListener('click', () => {
       const currentMode = mode();
-      const postText = ($('posting').value + $('extractedPostPdfText').value).trim();
+      const postText = ($('posting').value + ' ' + $('extractedPostPdfText').value).trim();
       if (currentMode === 'match' && !postText) {
         alert('채용공고 텍스트를 입력하시거나 PDF 파일을 업로드해 주세요.');
         return;
@@ -154,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     b.addEventListener('click', () => show(+b.dataset.back));
   });
 
-  // 예시 채우기
+  // 샘플 데이터 제어
   $('sampleButton')?.addEventListener('click', () => {
     $('role').value = '사무행정';
     const matchRadio = document.querySelector('input[value="match"]');
@@ -169,52 +167,61 @@ document.addEventListener('DOMContentLoaded', () => {
     show(2);
   });
 
-  function generateDrafts(currentMode, role, level, evidence, mainText, postText) {
-    const baseExp = evidence || (mainText.length > 10 ? mainText.slice(0, 120) : '지원 직무 관련 핵심 과업 수행 경험 보유');
+  // 이력서 및 자기소개서 초안 생성 함수
+  function generateDrafts(currentMode, role, level, evidence, combinedUserText, postText) {
+    const snippet = combinedUserText.length > 15 ? combinedUserText.slice(0, 200).replace(/\n/g, ' ') : '직무 관련 핵심 업무 수행 실무 경험 보유';
+    const baseExp = evidence || snippet;
     const isMatch = currentMode === 'match';
 
-    const autoResume = `[지원 정보] 대한상공회의소 추천 서류 / ${role} (${level})
+    const autoResume = `[지원 정보] 경기인력개발원 추천 서류 / ${role} (${level})
 [주요 역량] ${roleMap[role] ? roleMap[role].slice(0, 4).join(', ') : '실무 역량, 협업'}
-${isMatch && postText ? `[공고 타겟] 채용공고 우대사항 연관 역량 수립 완료` : ''}
+${isMatch && postText ? `[공고 타겟] 목표 채용공고의 필수 역량 및 우대사항 반영 완료` : ''}
 
-[핵심 경력 및 과업 성과]
-• 주요 수행 과업: ${baseExp}
-• 직무 적용 성과: 데이터 정확성 확보, 행정 업무 프로세스 효율화
-• 조직 기여 태도: 책임감 있는 자세와 구성원 간 원활한 커뮤니케이션`;
+[주요 경험 및 과업 성과 요약]
+• 핵심 수행 내용: ${baseExp}
+• 직무 적용 성과: 데이터 처리 정확성 확보, 행정 서식 체계화 및 업무 효율 개선
+• 조직 기여 태도: 세심한 업무 점검 및 구성원 간 원활한 소통/협업 능력 증명`;
 
     const autoLetter = isMatch ? 
 `[지원동기 및 맞춤 역량]
-${role} 직무 공고에서 요구하는 주요 역량을 충족하기 위해 실무 중심의 경험을 축적해왔습니다. 특히 "${baseExp}" 경험을 통해 공고에서 명시한 핵심 과업을 신속하고 정확하게 수행할 수 있는 실무 기준을 확립했습니다.
+${role} 직무 공고에서 요구하는 주요 역량을 충족하기 위해 실무 중심의 경험을 축적해 왔습니다. 
+특히 다음 경험을 바탕으로 핵심 과업을 신속하고 정확하게 수행할 수 있는 기반을 다졌습니다.
+- 주요 경험: ${baseExp}
 
 [입사 후 포부 및 성과 창출 계획]
-대한상공회의소의 체계적인 지원 체계에 맞춰 맡은 바 과업을 안정적으로 이행하고, 팀 내 협업을 강화하여 신뢰받는 ${role} 담당자로 성장하겠습니다.`
+경기인력개발원의 체계적인 실무 프로세스에 맞춰 맡은 바 과업을 완수하겠습니다. 입력된 실무 경험을 바탕으로 업무 오류를 최소화하고 조직의 성과 향상에 직접 기여하겠습니다.`
 :
-`[직무 수행 역량]
-${role} 직무 수행에서 가장 중요한 가치는 정확한 업무 처리와 책임감이라고 확신합니다.
-저는 "${baseExp}" 경험을 바탕으로 해당 직무에 필요한 기본기와 실무 문제 해결 능력을 다졌습니다.
+`[직무 수행 역량 및 강점]
+${role} 직무 수행에서 가장 중요한 가치는 정확한 업무 처리와 철저한 책임감입니다.
+저는 아래 실무 경험을 바탕으로 해당 직무에 필요한 기본기와 문제 해결 능력을 다졌습니다.
+- 주요 내용: ${baseExp}
 
 [향후 계획]
-주어진 업무 체계를 완벽히 숙지하여 조직 목표 달성에 직접적으로 기여하는 인재가 되겠습니다.`;
+주어진 업무 가이드라인을 완벽히 숙지하고 조직의 목표 달성에 적극적으로 기여하겠습니다.`;
 
     $('autoResumeDraft').textContent = autoResume;
     $('autoLetterDraft').textContent = autoLetter;
   }
 
+  // 진단 및 결과 렌더링
   function render() {
     const currentMode = mode();
     const role = $('role').value;
     const level = $('level').value;
     
+    // PDF 및 텍스트 데이터 취합
     const postText = ($('posting').value + ' ' + $('extractedPostPdfText').value).trim();
     const resumeText = $('resume').value.trim();
     const letterText = $('letter').value.trim();
-    const pdfText = $('extractedPdfText').value.trim();
+    const resumePdfText = $('extractedResumePdfText').value.trim();
+    const letterPdfText = $('extractedLetterPdfText').value.trim();
     const evidence = $('evidence').value.trim();
 
-    const mainText = `${resumeText} ${letterText} ${pdfText}`.trim();
-    const all = `${mainText} ${evidence}`;
+    // 입력 텍스트 전체 병합
+    const combinedUserText = `${resumeText} ${letterText} ${resumePdfText} ${letterPdfText}`.trim();
+    const all = `${combinedUserText} ${evidence}`;
 
-    generateDrafts(currentMode, role, level, evidence, mainText, postText);
+    generateDrafts(currentMode, role, level, evidence, combinedUserText, postText);
 
     const keys = roleMap[role] || roleMap['기타'];
     const postWords = unique(words(postText));
@@ -241,13 +248,13 @@ ${role} 직무 수행에서 가장 중요한 가치는 정확한 업무 처리�
 
     $('resultSummary').textContent = currentMode === 'match'
       ? '목표 채용공고의 요구역량을 바탕으로 도출된 맞춤 합격 전략입니다.'
-      : '대한상공회의소 희망 직무 표준 기준으로 분석된 결과입니다.';
+      : '경기인력개발원 희망 직무 표준 기준으로 분석된 결과입니다.';
 
     $('mainAction').textContent = nums < 1
       ? '실무 성과에 정량적 수치(건수, 비율, 대상)를 추가해 보세요.'
       : currentMode === 'match' && match.length < 2
       ? '공고의 주요 핵심 키워드를 자소서 서두에 전면 배치하세요.'
-      : '자동 생성된 초안을 바탕으로 세부 에피소드를 다듬어 보세요.';
+      : '생성된 서류 초안을 바탕으로 세부 에피소드를 다듬어 보세요.';
 
     $('scoreCaption').textContent = (currentMode === 'match' && postText)
       ? `목표 공고 키워드 ${found.length}개 중 ${match.length}개가 지원서에 반영되어 있습니다.`
@@ -281,19 +288,22 @@ ${role} 직무 수행에서 가장 중요한 가치는 정확한 업무 처리�
     ]);
   }
 
+  // 분석 실행
   $('analyzeButton')?.addEventListener('click', () => {
-    const allText = `${$('resume').value}${$('letter').value}${$('extractedPdfText').value}${$('evidence').value}`.trim();
-    if (!allText) {
+    const combinedUserText = `${$('resume').value}${$('letter').value}${$('extractedResumePdfText').value}${$('extractedLetterPdfText').value}${$('evidence').value}`.trim();
+    
+    if (!combinedUserText) {
       alert('경험 내용을 입력하시거나 PDF 문서를 첨부해 주세요.');
       return;
     }
+
     show(3);
     $('feedback').hidden = true;
     $('loading').hidden = false;
 
     let i = 0;
     const messages = [
-      '대한상공회의소 AI가 PDF 및 입력 데이터를 파싱 중입니다...',
+      '경기인력개발원 AI가 PDF 및 입력 데이터를 파싱 중입니다...',
       '채용공고 요구 역량 매칭 진단 중...',
       '맞춤형 이력서 및 자기소개서 초안 생성 완료 중...'
     ];
@@ -310,11 +320,13 @@ ${role} 직무 수행에서 가장 중요한 가치는 정확한 업무 처리�
     }, 1400);
   });
 
+  // 새로 시작
   $('restartButton')?.addEventListener('click', () => {
     show(1);
     $('start')?.scrollIntoView({ behavior: 'smooth' });
   });
 
+  // 복사하기
   $('copyButton')?.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText($('feedback').innerText);
@@ -323,5 +335,35 @@ ${role} 직무 수행에서 가장 중요한 가치는 정확한 업무 처리�
     } catch {
       alert('결과를 선택해 복사해 주세요.');
     }
+  });
+
+  // 파일 다운로드 기능 (.txt)
+  $('downloadDraftBtn')?.addEventListener('click', () => {
+    const resumeText = $('autoResumeDraft').textContent;
+    const letterText = $('autoLetterDraft').textContent;
+    const role = $('role').value;
+
+    const fileContent = `================================================
+경기인력개발원 커리어 나침반 - 맞춤 지원서 초안
+================================================
+
+1. 추천 이력서 요약
+------------------------------------------------
+${resumeText}
+
+2. 추천 자기소개서 초안
+------------------------------------------------
+${letterText}
+
+================================================
+* 본 서류는 경기인력개발원 AI 도구로 생성되었습니다.
+`;
+
+    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `경기인력개발원_지원서초안_${role}.txt`;
+    link.click();
+    URL.revokeObjectURL(link.href);
   });
 });
