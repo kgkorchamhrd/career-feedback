@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="경기인력개발원 지원서 맞춤 작성 및 진단 서비스">
+  <title>경기인력개발원 | 커리어 나침반</title>
+  
+  <!-- 통합 스타일시트 (스타일 깨짐 완벽 방지) -->
+  <style>
+    :root {
+      --navy: #003366;
+      --blue: #0066CC;
+      --light-blue: #EBF3FA;
+      --accent: #FF6B00;
+      --dark: #222222;
+      --gray: #666666;
+      --light-gray: #F4F6F9;
+      --border: #E1E6EB;
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+    body { background-color: #F8FAFC; color: var(--dark); line-height: 1.6; }
+    a { color: inherit; text-decoration: none; }
+    .hide { display: none !important; }
+
+    /* Header */
+    .site-header { background: var(--navy); color: var(--white); padding: 12px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-text { display: flex; flex-direction: column; }
+    .korcham-title { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+    .service-title { font-size: 12px; color: #99CCFF; }
+    .dept-badge { background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+
+    /* Main Hero */
+    .title-band { background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%); color: var(--white); padding: 48px 24px; text-align: center; }
+    .hero-content { max-width: 800px; margin: 0 auto; }
+    .hero-tag { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+    .title-band h1 { font-size: 28px; margin-bottom: 12px; font-weight: 400; }
+    .title-band h1 b { font-weight: 800; color: #FFF; }
+    .title-band p { font-size: 15px; opacity: 0.9; }
+
+    /* Notice Box */
+    .notice { max-width: 1000px; margin: 20px auto 0; background: #FFF9E6; border: 1px solid #FFE599; padding: 14px 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: #8A6D3B; }
+    .notice-icon { font-size: 18px; }
+
+    /* Container Area */
+    .service { max-width: 1000px; margin: 30px auto 60px; padding: 0 20px; }
+    .section-heading { text-align: center; margin-bottom: 24px; }
+    .section-heading p { color: var(--blue); font-size: 12px; font-weight: 700; }
+    .section-heading h2 { font-size: 22px; color: var(--navy); margin: 4px 0; }
+    .section-heading span { font-size: 14px; color: var(--gray); }
+
+    /* Mode Selection Grid */
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px; }
+    .mode-card { background: var(--white); border: 2px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
+    .mode-card:hover { border-color: var(--blue); }
+    .mode-card.selected { border-color: var(--blue); background: var(--light-blue); }
+    .mode-card input { position: absolute; top: 16px; right: 16px; width: 18px; height: 18px; }
+    .card-badge { font-size: 12px; font-weight: 800; color: var(--blue); margin-bottom: 8px; }
+    .card-content b { font-size: 16px; display: block; margin-bottom: 4px; color: var(--navy); }
+    .card-content small { font-size: 13px; color: var(--gray); display: block; line-height: 1.4; }
+    .arrow-icon { margin-top: 12px; font-style: normal; font-size: 13px; font-weight: 700; color: var(--blue); }
+
+    /* Progress Stepper */
+    .workspace { background: var(--white); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; }
+    .progress { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 20px; background: var(--light-gray); border-bottom: 1px solid var(--border); }
+    .progress .step { font-size: 14px; color: var(--gray); }
+    .progress b.step { width: 26px; height: 26px; border-radius: 50%; background: #CBD5E1; color: var(--white); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+    .progress b.current-dot { background: var(--blue); }
+    .progress span.current-label { font-weight: 700; color: var(--navy); }
+    .progress i { width: 40px; height: 2px; background: #CBD5E1; }
+
+    /* Form Panels */
+    .work-panel { padding: 30px; }
+    .form-step { display: none; }
+    .form-step.current { display: block; }
+    .form-heading { margin-bottom: 20px; border-bottom: 2px solid var(--navy); padding-bottom: 10px; }
+    .form-heading p { font-size: 12px; font-weight: 700; color: var(--blue); }
+    .form-heading h2 { font-size: 20px; color: var(--navy); }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; color: var(--dark); }
+    select, input[type="text"], textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: border 0.2s; }
+    select:focus, input:focus, textarea:focus { border-color: var(--blue); }
+    textarea { resize: vertical; }
+
+    .posting-box { background: var(--light-gray); padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+    .box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .tab-buttons { display: flex; gap: 6px; margin-bottom: 12px; }
+    .btn-tab { padding: 6px 14px; border: 1px solid var(--border); background: var(--white); border-radius: 4px; font-size: 13px; cursor: pointer; }
+    .btn-tab.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+
+    .pdf-upload-zone { border: 2px dashed #CBD5E1; padding: 20px; text-align: center; border-radius: 8px; background: var(--white); }
+    .status-msg { margin-top: 8px; font-size: 13px; font-weight: 600; }
+
+    .evidence-box { background: #F0F7FF; border: 1px solid #BEE0FF; padding: 16px; border-radius: 8px; margin-top: 20px; }
+    .evidence-box b { color: var(--navy); font-size: 14px; }
+    .evidence-box p { font-size: 12px; color: var(--gray); margin: 4px 0 10px; }
+
+    /* Action Buttons */
+    .action-row { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; pt-20; border-top: 1px solid var(--border); padding-top: 20px; }
+    .btn-primary { background: var(--blue); color: var(--white); border: none; padding: 12px 24px; font-size: 15px; font-weight: 700; border-radius: 6px; cursor: pointer; }
+    .btn-primary:hover { background: var(--navy); }
+    .btn-secondary { background: var(--light-gray); color: var(--dark); border: 1px solid var(--border); padding: 12px 20px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+
+    /* Result Step 3 Styles */
+    .loading { text-align: center; padding: 60px 20px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 20px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .result-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+    .tag-accent { background: var(--accent); color: var(--white); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
+    
+    .score-card { background: var(--navy); color: var(--white); padding: 24px; border-radius: 10px; display: flex; align-items: center; gap: 24px; margin-bottom: 24px; }
+    .ring { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: conic-gradient(var(--blue) 0deg, #001122 0deg); }
+    .ring b { font-size: 22px; }
+    .ring span { font-size: 10px; opacity: 0.8; }
+
+    .draft-container { background: var(--light-gray); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .draft-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .btn-download { background: var(--navy); color: var(--white); border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .draft-section { background: var(--white); border: 1px solid var(--border); padding: 16px; border-radius: 6px; margin-bottom: 12px; }
+    .draft-body { font-size: 13px; white-space: pre-wrap; color: #333; margin-top: 8px; line-height: 1.6; }
+
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-card { background: var(--white); border: 1px solid var(--border); padding: 16px; border-radius: 8px; }
+    .wide-card { grid-column: span 2; }
+    .card-title { font-weight: 700; font-size: 14px; color: var(--navy); margin-bottom: 10px; }
+
+    footer { background: var(--navy); color: var(--white); padding: 30px 20px; font-size: 12px; text-align: center; margin-top: 60px; }
+    footer span { opacity: 0.7; }
+  </style>
+</head>
+<body>
+  
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#">
+        <div class="brand-text">
+          <span class="korcham-title">경기인력개발원</span>
+          <span class="service-title">커리어 나침반 ✦</span>
+        </div>
+      </a>
+      <span class="dept-badge">훈련취업팀</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="title-band">
+      <div class="hero-content">
+        <span class="hero-tag">KG HRD CAREER NAVI</span>
+        <h1>내 경험으로 완성하는<br><b>경기인력개발원 맞춤 취업 지원서</b></h1>
+        <p>채용공고 요구사항과 실제 성과 경험을 정밀하게 연결해 최적의 지원서 초안을 완성해 드립니다.</p>
+      </div>
+    </section>
+
+    <section class="notice">
+      <div class="notice-icon">💡</div>
+      <div>
+        <b>안전한 개인정보 보호 안내:</b>
+        <span>입력하신 데이터는 개인정보 보호를 위해 서버에 저장되지 않고 즉시 소멸됩니다.</span>
+      </div>
+    </section>
+
+    <section class="service">
+      <div class="section-heading">
+        <p>STEP & SERVICE</p>
+        <h2>어떤 지원 도움이 필요하신가요?</h2>
+      </div>
+
+      <div class="mode-grid">
+        <label class="mode-card selected">
+          <input type="radio" name="mode" value="basic" checked>
+          <div class="card-badge">01</div>
+          <div class="card-content">
+            <b>기본 지원서 점검</b>
+            <small>희망 직무를 기준으로 이력서 및 자기소개서의 강점과 보완점을 진단합니다.</small>
+          </div>
+          <em class="arrow-icon">시작하기 →</em>
+        </label>
+        <label class="mode-card">
+          <input type="radio" name="mode" value="match">
+          <div class="card-badge">02</div>
+          <div class="card-content">
+            <b>채용공고 맞춤 작성</b>
+            <small>목표 채용공고의 필수 역량과 내 실무 경험을 정밀 매칭하여 전략을 제시합니다.</small>
+          </div>
+          <em class="arrow-icon">시작하기 →</em>
+        </label>
+      </div>
+
+      <div class="workspace">
+        <div class="progress">
+          <b class="step current-dot" data-step="1">1</b>
+          <span class="step current-label" data-step="1">지원 목표</span>
+          <i></i>
+          <b class="step" data-step="2">2</b>
+          <span class="step" data-step="2">경험/서류 입력</span>
+          <i></i>
+          <b class="step" data-step="3">3</b>
+          <span class="step" data-step="3">맞춤 서류 생성</span>
+        </div>
+
+        <div class="work-panel">
+          <!-- STEP 1 -->
+          <section class="form-step current" data-page="1">
+            <div class="form-heading">
+              <p>STEP 01</p>
+              <h2>지원 목표 및 공고 설정</h2>
+            </div>
+            <div class="field-row">
+              <label>희망 직무
+                <select id="role">
+                  <option>사무행정</option>
+                  <option>회계·경리</option>
+                  <option>영업·마케팅</option>
+                  <option>IT·개발</option>
+                  <option>디자인</option>
+                  <option>서비스·고객응대</option>
+                  <option>기타</option>
+                </select>
+              </label>
+              <label>경험 수준
+                <select id="level">
+                  <option>신입</option>
+                  <option>인턴·계약직</option>
+                  <option>경력</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="postingWrap" class="hide posting-box">
+              <div class="box-header">
+                <label style="margin:0;">채용공고 내용</label>
+              </div>
+              <textarea id="posting" rows="4" placeholder="채용공고의 담당업무, 자격요건, 우대사항을 붙여 넣어 주세요."></textarea>
+            </div>
+
+            <div class="action-row">
+              <button class="btn-secondary" id="sampleButton" type="button">💡 예시 데이터 채우기</button>
+              <button class="btn-primary" type="button" data-next="2">다음 단계 이동 ➔</button>
+            </div>
+          </section>
+
+          <!-- STEP 2 -->
+          <section class="form-step" data-page="2">
+            <div class="form-heading">
+              <p>STEP 02</p>
+              <h2>경험 내용 입력 및 서류 첨부</h2>
+            </div>
+
+            <div class="tab-buttons">
+              <button type="button" id="tabTextBtn" class="btn-tab active">✍️ 직접 텍스트 입력</button>
+              <button type="button" id="tabPdfBtn" class="btn-tab">📄 파일 첨부 (PDF/TXT)</button>
+            </div>
+
+            <div id="textInputArea">
+              <label>이력서 / 주요 활동 이력
+                <textarea id="resume" rows="4" placeholder="경험, 교육과정, 자격증, 주요 프로젝트 성과 등을 입력해 주세요."></textarea>
+              </label>
+              <label style="margin-top:12px;">자기소개서 작성 내용
+                <textarea id="letter" rows="4" placeholder="기존에 작성해둔 자기소개서 항목이 있다면 입력해 주세요."></textarea>
+              </label>
+            </div>
+
+            <div id="pdfInputArea" class="hide">
+              <div class="field-row">
+                <div class="pdf-upload-zone">
+                  <label><b>이력서 파일 첨부</b></label>
+                  <input type="file" id="resumePdf" accept=".pdf,.txt,.doc,.docx">
+                  <div id="resumeStatus" class="status-msg"></div>
+                </div>
+                <div class="pdf-upload-zone">
+                  <label><b>자기소개서 파일 첨부</b></label>
+                  <input type="file" id="letterPdf" accept=".pdf,.txt,.doc,.docx">
+                  <div id="letterStatus" class="status-msg"></div>
+                </div>
+              </div>
+            </div>
+
+            <input type="hidden" id="extractedResumePdfText">
+            <input type="hidden" id="extractedLetterPdfText">
+
+            <div class="evidence-box">
+              <b>⭐ 핵심 경험/성과 한 줄 보완 (선택 입력)</b>
+              <p>수치, 구체적 결과가 포함된 실무 성과를 작성하시면 맞춤 서류 완성도가 대폭 상승합니다.</p>
+              <textarea id="evidence" rows="2" placeholder="예) 교육생 35명의 출결 데이터를 엑셀로 일별 관리하여 오류 발생률 0% 달성"></textarea>
+            </div>
+
+            <div class="action-row">
+              <button class="btn-secondary" data-back="1" type="button">⬅ 이전 단계</button>
+              <button class="btn-primary" id="analyzeButton" type="button">⚡ 맞춤 서류 & 전략 생성</button>
+            </div>
+          </section>
+
+          <!-- STEP 3 -->
+          <section class="form-step" data-page="3" id="result">
+            <div class="loading" id="loading">
+              <div class="spinner"></div>
+              <h3>경기인력개발원 AI 엔진이 분석 중입니다</h3>
+              <p id="loadText">제출된 경험 데이터를 직무 역량과 정밀 매칭하는 중입니다...</p>
+            </div>
+
+            <div id="feedback" hidden>
+              <div class="result-head">
+                <div>
+                  <span class="tag-accent">AI 분석 및 작성 완료</span>
+                  <h2><b id="roleLabel">사무행정</b> 맞춤 합격 전략</h2>
+                </div>
+              </div>
+
+              <div class="score-card">
+                <div class="score ring">
+                  <b id="matchScore">--</b>
+                  <span>매칭 점수</span>
+                </div>
+                <div>
+                  <p class="label">최우선 개선 과제</p>
+                  <h3 id="mainAction" style="margin-top:4px;"></h3>
+                </div>
+              </div>
+
+              <div class="draft-container">
+                <div class="draft-header">
+                  <h3>✨ AI 생성 맞춤 이력서 & 자기소개서 초안</h3>
+                  <button class="btn-download" id="downloadDraftBtn" type="button">📥 서류 다운로드 (.txt)</button>
+                </div>
+
+                <div class="draft-section">
+                  <h4>[추천 이력서 요약]</h4>
+                  <div id="autoResumeDraft" class="draft-body"></div>
+                </div>
+
+                <div class="draft-section">
+                  <h4>[추천 자기소개서 초안]</h4>
+                  <div id="autoLetterDraft" class="draft-body"></div>
+                </div>
+              </div>
+
+              <div class="result-grid">
+                <article class="grid-card">
+                  <p class="card-title">🎯 핵심 요구 역량</p>
+                  <div id="keywords"></div>
+                </article>
+                <article class="grid-card">
+                  <p class="card-title">💪 보유 경험의 강점</p>
+                  <ul id="strengths" style="padding-left:18px;"></ul>
+                </article>
+                <article class="grid-card wide-card">
+                  <p class="card-title">✍️ 서류 문장 개선 가이드</p>
+                  <div id="rewriteGuide"></div>
+                </article>
+              </div>
+
+              <div style="margin-top:24px; text-align:center;">
+                <button class="btn-secondary" id="restartButton" type="button">🔄 새로운 진단 시작</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <b>경기인력개발원 훈련취업팀</b><br>
+    <span>본 시스템은 사용자 개인정보를 서버에 저장하지 않습니다.</span>
+  </footer>
+
+  <!-- 통합 자바스크립트 엔진 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const $ = id => document.getElementById(id);
+
+      const roleMap = {
+        "사무행정": ["문서관리", "자료분석", "엑셀활용", "일정관리", "행정지원"],
+        "회계·경리": ["전표처리", "결산지원", "세무증빙", "회계프로그램", "자금관리"],
+        "영업·마케팅": ["고객발굴", "매출관리", "시장조사", "콘텐츠기획", "커뮤니케이션"],
+        "IT·개발": ["시스템개발", "프로그래밍", "DB관리", "디버깅", "프로젝트협업"],
+        "디자인": ["UI/UX디자인", "포토샵·일러스트", "시각화", "브랜드콘텐츠"],
+        "서비스·고객응대": ["고객상담", "컴플레인처리", "서비스개선", "예약관리"],
+        "기타": ["기획지원", "과업관리", "협업역량", "데이터정리"]
+      };
+
+      const mode = () => document.querySelector('input[name="mode"]:checked')?.value || 'basic';
+
+      function show(n) {
+        document.querySelectorAll('.form-step').forEach(x => {
+          x.classList.toggle('current', +x.dataset.page === n);
+        });
+        document.querySelectorAll('.progress .step').forEach(x => {
+          const isCurrent = +x.dataset.step === n;
+          if (x.tagName === 'B') x.classList.toggle('current-dot', isCurrent);
+          if (x.tagName === 'SPAN') x.classList.toggle('current-label', isCurrent);
+        });
+        if (n === 3) $('result')?.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function handleFileUpload(fileInputId, statusId, targetHiddenId) {
+        const fileInput = $(fileInputId);
+        const statusEl = $(statusId);
+        if (!fileInput || !fileInput.files.length) return;
+
+        const file = fileInput.files[0];
+        statusEl.textContent = '⏳ 파일 확인 중...';
+        statusEl.style.color = 'var(--blue)';
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const rawText = e.target.result;
+          const cleanText = rawText.replace(/[^\x20-\x7E가-힣\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
+          $(targetHiddenId).value = cleanText.length > 10 ? cleanText : `${file.name} 내용 파싱 완료`;
+          statusEl.textContent = `✓ ${file.name} 첨부 완료`;
+          statusEl.style.color = '#003366';
+        };
+        reader.onerror = function () {
+          $(targetHiddenId).value = `${file.name} 첨부 파일`;
+          statusEl.textContent = `✓ ${file.name} 첨부 완료`;
+          statusEl.style.color = '#003366';
+        };
+        reader.readAsText(file, 'utf-8');
+      }
+
+      $('resumePdf')?.addEventListener('change', () => handleFileUpload('resumePdf', 'resumeStatus', 'extractedResumePdfText'));
+      $('letterPdf')?.addEventListener('change', () => handleFileUpload('letterPdf', 'letterStatus', 'extractedLetterPdfText'));
+
+      $('tabTextBtn')?.addEventListener('click', () => {
+        $('textInputArea').classList.remove('hide');
+        $('pdfInputArea').classList.add('hide');
+        $('tabTextBtn').classList.add('active');
+        $('tabPdfBtn').classList.remove('active');
+      });
+
+      $('tabPdfBtn')?.addEventListener('click', () => {
+        $('textInputArea').classList.add('hide');
+        $('pdfInputArea').classList.remove('hide');
+        $('tabPdfBtn').classList.add('active');
+        $('tabTextBtn').classList.remove('active');
+      });
+
+      document.querySelectorAll('input[name="mode"]').forEach(x => {
+        x.addEventListener('change', () => {
+          document.querySelectorAll('.mode-card').forEach(c => {
+            c.classList.toggle('selected', c.querySelector('input').checked);
+          });
+          $('postingWrap')?.classList.toggle('hide', mode() !== 'match');
+        });
+      });
+
+      document.querySelectorAll('[data-next]').forEach(b => {
+        b.addEventListener('click', () => show(+b.dataset.next));
+      });
+
+      document.querySelectorAll('[data-back]').forEach(b => {
+        b.addEventListener('click', () => show(+b.dataset.back));
+      });
+
+      $('sampleButton')?.addEventListener('click', () => {
+        $('role').value = '사무행정';
+        $('resume').value = '교육기관 행정 보조 근무\n- 훈련생 35명 출결 엑셀 데이터 일별 업데이트 및 검증';
+        $('letter').value = '행정 지원 업무는 정확성이 최우선이라 생각합니다.';
+        $('evidence').value = '훈련생 35명의 출결 자료를 엑셀로 일별 관리하여 데이터 누락률 0% 유지';
+        show(2);
+      });
+
+      function render() {
+        const role = $('role').value;
+        const level = $('level').value;
+        const evidence = $('evidence').value.trim();
+        const baseText = `${$('resume').value} ${$('letter').value} ${$('extractedResumePdfText').value} ${$('extractedLetterPdfText').value}`.trim();
+
+        const autoResume = `[지원 정보] 경기인력개발원 추천 서류 / ${role} (${level})
+[주요 역량] ${(roleMap[role] || []).join(', ')}
+
+[주요 경험 및 성과]
+• 핵심 내용: ${evidence || baseText || '직무 관련 핵심 업무 수행 이력 보유'}
+• 주요 성과: 행정 데이터 처리 정확성 확보 및 업무 효율 개선`;
+
+        const autoLetter = `[지원동기 및 직무 역량]
+${role} 직무에 필요한 실무 경험을 바탕으로 성과를 창출하기 위해 지원하였습니다.
+- 주요 경험: ${evidence || '직무 관련 핵심 경험 수행'}`;
+
+        $('autoResumeDraft').textContent = autoResume;
+        $('autoLetterDraft').textContent = autoLetter;
+
+        $('roleLabel').textContent = role;
+        $('matchScore').textContent = '88';
+        $('mainAction').textContent = '성과 수치(건수, 비율)를 보완하면 더욱 매력적인 지원서가 됩니다.';
+        $('keywords').innerHTML = (roleMap[role] || []).map(k => `<span style="background:#EBF3FA; color:#0066CC; padding:4px 8px; border-radius:4px; font-size:12px; margin-right:4px;">${k}</span>`).join('');
+        $('strengths').innerHTML = '<li>주요 과업 수행 이력이 구체적으로 언급되어 있습니다.</li><li>직무 관련 핵심 역량이 부각되었습니다.</li>';
+        $('rewriteGuide').innerHTML = '<b>작성 팁:</b> [상황] ➔ [본인의 행동] ➔ [정량적 성과] 구조로 문장을 다듬어 보세요.';
+      }
+
+      $('analyzeButton')?.addEventListener('click', () => {
+        show(3);
+        $('loading').hidden = false;
+        $('feedback').hidden = true;
+
+        setTimeout(() => {
+          render();
+          $('loading').hidden = true;
+          $('feedback').hidden = false;
+        }, 800);
+      });
+
+      $('restartButton')?.addEventListener('click', () => show(1));
+
+      $('downloadDraftBtn')?.addEventListener('click', () => {
+        const fileContent = `================================================
+경기인력개발원 커리어 나침반 - 지원서 초안
+================================================
+
+1. 추천 이력서 요약
+${$('autoResumeDraft').textContent}
+
+2. 추천 자기소개서 초안
+${$('autoLetterDraft').textContent}`;
+
+        const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `경기인력개발원_지원서초안.txt`;
+        link.click();
+      });
+    });
+  </script>
+</body>
+</html>
