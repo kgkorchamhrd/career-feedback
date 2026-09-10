@@ -151,7 +151,7 @@
       <div class="hero-content">
         <span class="hero-tag">KG HRD CAREER NAVI</span>
         <h1>선생님이 알려주는 <b>1:1 맞춤 지원서 멘토링</b></h1>
-        <p>세부 문장 첨삭 의견, 완성형 수정안, 맞춤 총평을 체계적으로 분리하여 제공합니다.</p>
+        <p>희망 직무와 지원 단계별 실무 채용 기준을 분석하여 구체적인 첨삭 전략을 제시합니다.</p>
       </div>
     </section>
 
@@ -188,9 +188,9 @@
               </label>
               <label>지원 단계
                 <select id="level">
-                  <option>신입 (훈련과정 이수자)</option>
-                  <option>인턴 / 계약직 지원</option>
-                  <option>경력직 이직</option>
+                  <option value="신입">신입 (훈련과정 이수자 / 신입 지원)</option>
+                  <option value="인턴">인턴 / 체험형 인턴 / 계약직</option>
+                  <option value="경력">경력직 이직 (실무 경력 보유자)</option>
                 </select>
               </label>
             </div>
@@ -249,7 +249,7 @@
             <div class="loading" id="loading">
               <div class="spinner"></div>
               <h3>제출하신 서류를 정밀 분석하고 있습니다...</h3>
-              <p>직무 핵심 키워드 및 작성 내용을 기반으로 맞춤 첨삭을 진행 중입니다.</p>
+              <p>희망 직무 및 지원 단계별 실무 채용 선호도를 반영하여 첨삭을 진행 중입니다.</p>
             </div>
 
             <div id="feedback" hidden>
@@ -257,66 +257,66 @@
                 <div class="teacher-avatar">👨‍🏫</div>
                 <div class="teacher-msg">
                   <h3>"반가워요! 훈련취업팀 담당 교사입니다."</h3>
-                  <p>제출해 주신 서류의 실무 경험과 역량 포인트를 바탕으로 세부 개선 가이드와 추천 문장을 정돈해 두었습니다.</p>
+                  <p>선택하신 <b id="displayRoleLevel" style="text-decoration:underline;">[직무 / 단계]</b> 채용 기준에 맞추어 실제 평가관이 선호하는 이력서·자기소개서 보완점을 정리했습니다.</p>
                 </div>
               </div>
 
               <h3 style="font-size:16px; color:var(--navy); margin-bottom:10px;">📋 종합 첨삭 지도 요약표</h3>
               <table class="report-table">
                 <tr>
-                  <th>서류 분석</th>
-                  <td>제출된 실무 경험 및 주요 프로젝트 성과 영역 진단 완료</td>
+                  <th>서류 진단</th>
+                  <td id="tbDiagnosis">제출된 실무 경험 및 역량 영역 진단 완료</td>
                 </tr>
                 <tr>
-                  <th>첨삭 의견</th>
-                  <td>직무 전문성을 극대화하기 위한 문장 표현 및 구성 보완점 제시</td>
+                  <th>첨삭 핵심</th>
+                  <td id="tbFocus">직무 연관성 및 지원 단계별 핵심 포인트 보완 제시</td>
                 </tr>
                 <tr>
-                  <th>수정안 작성</th>
-                  <td>핵심 성과와 직무 툴(Tool) 활용 능력이 잘 드러나는 추천 문장 구성</td>
+                  <th>수정안 추천</th>
+                  <td id="tbDraftType">기업 실무진이 선호하는 성과 중심 문장 구성</td>
                 </tr>
                 <tr>
-                  <th>맞춤 피드백</th>
-                  <td>지원 직무 기반 1:1 강점 진단 및 실제 면접 연계 준비 팁 제공</td>
+                  <th>면접 대비</th>
+                  <td id="tbInterview">지원서 내용 기반 1:1 맞춤 예상 면접 질문 제공</td>
                 </tr>
               </table>
 
               <!-- 1. 서류 분석 -->
               <div class="detail-card">
-                <h4>🔍 1. 서류 세부 분석</h4>
+                <h4>🔍 1. 서류 세부 분석 (기업 평가관 관점)</h4>
                 <div id="fourSectionAnalysis"></div>
               </div>
 
               <!-- 2. 세부 문장 첨삭 의견 -->
               <div class="detail-card">
                 <h4>💬 2. 세부 문장 첨삭 의견 (개선 가이드)</h4>
-                <p style="font-size:13px; color:var(--gray); margin-bottom:12px;">직무 전문성을 높이기 위한 기존 문장의 보완 방향입니다.</p>
+                <p style="font-size:13px; color:var(--gray); margin-bottom:12px;">기업 실무진의 입장에서 직무 전문성을 더욱 돋보이게 만들기 위한 보완 가이드입니다.</p>
                 <div id="opinionList"></div>
               </div>
 
               <!-- 3. 완성형 수정안 -->
               <div class="detail-card">
                 <h4>✨ 3. 완성형 수정안 (즉시 적용 가능)</h4>
-                <p style="font-size:13px; color:var(--gray); margin-bottom:12px;">직무 역량과 주요 과업 성과를 직관적으로 다듬은 추천 문장입니다.</p>
+                <p style="font-size:13px; color:var(--gray); margin-bottom:12px;">직무 역량과 주요 과업 성과가 직관적으로 드러나도록 정돈한 추천 문장입니다.</p>
                 <div id="draftList"></div>
               </div>
 
               <!-- 4. 종합 총평 및 심층 피드백 -->
               <div class="detail-card">
-                <h4>🎯 4. 선생님의 종합 총평 및 심층 피드백</h4>
+                <h4>🎯 4. 선생님의 종합 총평 및 지원 단계별 전략</h4>
                 <div id="overallReview" style="font-size:14px; color:#334155; line-height:1.8; margin-bottom:14px; padding:12px; background:#FFFFFF; border-radius:6px; border:1px solid var(--border);"></div>
                 
                 <div class="feedback-grid">
                   <div class="fb-box fb-strength">
-                    <b style="display:block; margin-bottom:6px; font-size:14px;">🌟 훈련생의 확실한 강점</b>
+                    <b style="display:block; margin-bottom:6px; font-size:14px;">🌟 제출 서류의 강점 포인트</b>
                     <div id="strengthText"></div>
                   </div>
                   <div class="fb-box fb-weakness">
-                    <b style="display:block; margin-bottom:6px; font-size:14px;">💡 지원서 1:1 보완 가이드</b>
+                    <b style="display:block; margin-bottom:6px; font-size:14px;">💡 지원 단계별 핵심 보완점</b>
                     <div id="weaknessText"></div>
                   </div>
                   <div class="fb-box fb-interview">
-                    <b style="display:block; margin-bottom:6px; font-size:14px;">🗣️ 면접 연계 대비 팁</b>
+                    <b style="display:block; margin-bottom:6px; font-size:14px;">🗣️ 예상 면접 질문 및 답변 전략</b>
                     <div id="interviewText"></div>
                   </div>
                 </div>
@@ -335,7 +335,7 @@
 
   <footer>
     <b>경기인력개발원 훈련취업팀</b> | 훈련생 맞춤 취업지원 서비스<br>
-    <span style="opacity:0.7;">본 시스템은 개인정보를 보관하지 않으며 작성된 데이터는 즉시 소멸됩니다.</span>
+    <span style="opacity:0.7;">본 시스템은 제출된 서류 데이터를 보관하지 않으며 실시간 분석 후 소멸됩니다.</span>
   </footer>
 
   <script>
@@ -389,49 +389,38 @@
         return textContent.replace(/\s+/g, ' ').trim();
       }
 
-      // [핵심 1] 모든 인적사항 관련 단어 및 영문 헤더 완벽 소거 로직
+      // 내부적으로 불필요 데이터만 정제 (개인정보 관련 언급 문구는 일절 생성하지 않음)
       function cleanTextForMentoring(text) {
         if (!text) return '';
         let cleaned = text;
 
-        // 이메일, 전화번호, 주민번호/생년월일
         cleaned = cleaned.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '');
         cleaned = cleaned.replace(/(01[016789]|02|0[3-9][0-9])[-.\s]?[0-9]{3,4}[-.\s]?[0-9]{4}/g, '');
         cleaned = cleaned.replace(/\d{2,4}[.\-\/년\s]+\d{1,2}[.\-\/월\s]+\d{1,2}[일\s]*/g, '');
         cleaned = cleaned.replace(/\d{6}[-~]\d{7}/g, '');
 
-        // 헤더 영문 및 인적사항 키워드 소거 (Email, Mobile, Phone, Address, Github, Linkedin, 성명 등)
-        const privacyNoise = [
-          'Email', 'EMAIL', 'email', 'Mobile', 'MOBILE', 'mobile', 'Phone', 'PHONE', 
-          'Address', 'ADDRESS', 'Github', 'GITHUB', 'Linkedin', 'LINKEDIN', '생년월일', 
-          '성명', '이름', '주소', '연락처', '휴대폰', '이메일', '현주소', '학력', '병역'
-        ];
-        
-        privacyNoise.forEach(word => {
-          const reg = new RegExp(word, 'g');
-          cleaned = cleaned.replace(reg, '');
+        const filterWords = ['Email', 'EMAIL', 'Mobile', 'Address', 'Github', 'Linkedin', '성명', '이름', '주소', '연락처', '휴대폰', '이메일', '현주소', '생년월일'];
+        filterWords.forEach(w => {
+          cleaned = cleaned.replace(new RegExp(w, 'gi'), '');
         });
 
-        // 2글자 이상 의미 있는 직무 관련 단어 추출용 사전 정제
         return cleaned.replace(/[^\x20-\x7E가-힣]/g, ' ').replace(/\s+/g, ' ').trim();
       }
 
-      // [핵심 2] 입력된 텍스트에서 주요 직무 키워드 동적 추출
       function extractKeywords(text, role) {
         if (!text || text.length < 5) {
           return {
-            summary: `${role} 직무 관련 실무 교육 과구직 과업`,
-            extractedTools: role === '디자인' ? 'Photoshop, Illustrator' : (role === 'IT·개발' ? 'Java, Python' : '엑셀, 문서 작성 툴')
+            summary: `${role} 관련 주요 실무 과업 및 이력`,
+            extractedTools: role === '디자인' ? 'Photoshop, Illustrator, Figma' : (role === 'IT·개발' ? 'Java, Python, SQL' : 'Excel, 문서 작성 프로그램')
           };
         }
 
-        // 공백 기준 분할 후 2글자 이상의 의미 있는 단어들 필터링
         const tokens = text.split(' ').filter(t => t.length >= 2);
-        const sampleText = tokens.slice(0, 15).join(' ');
+        const sampleText = tokens.slice(0, 12).join(' ');
 
         return {
-          summary: sampleText || `${role} 직무 관련 실무 과업`,
-          extractedTools: sampleText.length > 20 ? sampleText.slice(0, 25) + ' 등' : sampleText
+          summary: sampleText || `${role} 실무 과업`,
+          extractedTools: tokens.length > 3 ? tokens.slice(0, 4).join(', ') : '기본 실무 툴 및 과업'
         };
       }
 
@@ -441,7 +430,7 @@
         if (!input || !input.files.length) return;
 
         const file = input.files[0];
-        status.textContent = '⏳ 서류 파싱 중...';
+        status.textContent = '⏳ 서류 분석 준비 중...';
 
         try {
           let extractedText = '';
@@ -453,14 +442,14 @@
 
           if (extractedText.length > 10) {
             $(hiddenTargetId).value = extractedText;
-            status.textContent = `✓ ${file.name} (정상 인식됨)`;
+            status.textContent = `✓ ${file.name} (분석 완료)`;
           } else {
-            $(hiddenTargetId).value = `${file.name} 서류 제출됨`;
+            $(hiddenTargetId).value = `${file.name} 서류 데이터`;
             status.textContent = `✓ ${file.name} 첨부 완료`;
           }
         } catch (err) {
           console.error(err);
-          $(hiddenTargetId).value = `${file.name} 서류 첨부됨`;
+          $(hiddenTargetId).value = `${file.name} 서류 데이터`;
           status.textContent = `✓ ${file.name} 첨부 완료`;
         }
       }
@@ -470,144 +459,200 @@
 
       $('sampleButton')?.addEventListener('click', () => {
         $('role').value = '사무행정';
+        $('level').value = '신입';
         $('resume').value = '경기인력개발원 사무행정 수강. 엑셀 함수 및 파워포인트 활용, 훈련생 30명 출결 관리 실무 담당.';
         $('letter').value = '정확한 문서 관리와 데이터 입력으로 행정 지원 업무의 효율성을 증대시키겠습니다.';
         show(2);
       });
 
-      // [핵심 3] 동적 피드백 생성 엔진
+      // [직무 × 지원단계 통합 맞춤 피드백 엔진]
       function runMentoringAnalysis() {
         const role = $('role').value;
+        const levelRaw = $('level').value; // '신입', '인턴', '경력'
+        const level = levelRaw.includes('신입') ? '신입' : (levelRaw.includes('인턴') ? '인턴' : '경력');
+
         const uploadedResume = $('extractedResumeText').value || $('resume').value;
         const uploadedLetter = $('extractedLetterText').value || $('letter').value;
 
-        // 인적사항 표기 단어 소거
         const cleanResume = cleanTextForMentoring(uploadedResume);
         const cleanLetter = cleanTextForMentoring(uploadedLetter);
 
-        // 핵심 키워드 추출
         const resumeInfo = extractKeywords(cleanResume, role);
-        const letterInfo = extractKeywords(cleanLetter, role);
 
-        // 직무별 개별화된 피드백 데이터베이스
-        const roleProfiles = {
-          '디자인': {
-            analysis: `제출된 내용에서 <b>디자인 직무</b> 관련 작업 및 포트폴리오 기획 경험이 파악됩니다. 시각적 메시지 전달 능력과 툴 활용 능력을 강조하도록 구성했습니다.`,
-            opinion1: `작업물 제작 경험 언급 시, 사용한 툴(Photoshop, Illustrator, Figma 등)과 디자인 목표(브랜드 이미지 강화, UI 개선 등)를 더욱 명확히 대비시켜 기술하는 것을 권장합니다.`,
-            opinion2: `디자인 컨셉을 도출하는 과정과 문제 해결 논리를 강조하면 실무 적합성을 훨씬 크게 어필할 수 있습니다.`,
-            draft1: `"디자인 직무 수행의 핵심은 시각적 완성도와 타깃 중심의 기획력입니다. 경기인력개발원 훈련 과정에서 [${resumeInfo.extractedTools}] 관련 프로젝트를 수행하며 브랜드 컨셉에 최적화된 시각물 제작 실무를 익혔습니다."`,
-            draft2: `"입사 후 독창적인 디자인 감각과 철저한 타깃 분석을 바탕으로 브랜드 가치를 제고하는 시각 결과물을 꾸준히 창출하겠습니다."`,
-            review: `"디자인 직무는 단순히 예쁜 결과물을 만드는 것 이상으로, 기획 의도를 시각화하는 과정이 중요합니다. 제출하신 경험에 컨셉 도출과 툴 활용 능력이 잘 담겨 있으니 수정안을 참고해 포트폴리오와 연결해 보세요!"`,
-            strength: `디자인 툴 활용 능력 및 실무 프로젝트 제작 경험 보유`,
-            weakness: `제작 결과물뿐만 아니라 기획 의도 및 시각적 문제 해결 과정을 구체적으로 기술할 필요가 있음`,
-            interview: `"프로젝트 진행 중 시각적 컨셉을 결정할 때 어떤 기준을 중시했는가?"라는 질문에 대비해 보세요.`
+        // 표시용 텍스트
+        $('displayRoleLevel').textContent = `${role} 직무 / ${level} 지원`;
+
+        // 지원 단계별 기업 선호 이력서/자소서 가이드라인
+        const levelGuide = {
+          '신입': {
+            focus: '학습 성실성, 교육 이수 내용, 실무 툴 기초 다지기, 성장 가능성',
+            pref: '기업은 신입 평가 시 [교육과정 이수 성과]와 [기초 툴 활용 능력], 그리고 [조직 적응 태도]를 집중 분석합니다.'
           },
-          'IT·개발': {
-            analysis: `제출된 내용에서 <b>IT·개발 직무</b> 관련 코드 작성 및 프로젝트 구현 경험이 확인됩니다. 기술 스택과 로직 구현 능력을 중심으로 정리했습니다.`,
-            opinion1: `프로젝트 언급 시 사용한 언어/프레임워크(Java, Python, React 등)와 담당했던 기능(API 구현, DB 설계 등)을 정량적 성과와 함께 서술하는 것이 좋습니다.`,
-            opinion2: `개발 중 발생한 디버깅 경험이나 성능 개선 사례를 구체화하면 기술적 깊이를 더욱 돋보이게 할 수 있습니다.`,
-            draft1: `"개발 직무의 핵심은 효율적인 로직 설계와 문제 해결 능력입니다. 경기인력개발원 과정을 통해 [${resumeInfo.extractedTools}] 기술을 활용한 프로젝트에 참여하며 안정적인 시스템 구축 실무를 경험했습니다."`,
-            draft2: `"입사 후 지속적인 기술 학습과 신속한 코드 리팩토링을 통해 서비스 안정성을 최우선으로 확보하는 개발자가 되겠습니다."`,
-            review: `"개발 지원서에서는 '어떤 기술로 무엇을 만들어보았는가'가 핵심입니다. 작성하신 프로젝트 경험에 구현 기능과 기술 스택을 명확히 명시하면 완성도가 크게 올라갑니다."`,
-            strength: `주요 기술 스택 활용 및 개발 프로젝트 실제 구현 경험 보유`,
-            weakness: `트러블슈팅(오류 해결) 과정이나 코드 효율화에 대한 구체적 서술 보완 필요`,
-            interview: `"프로젝트 구현 중 가장 해결하기 힘들었던 기술적 문제는 무엇이었고 어떻게 해결했는가?"에 대비하세요.`
+          '인턴': {
+            focus: '단기 실무 투입 가능성, 소통 및 협업 태도, 과업 수행의 신속성',
+            pref: '기업은 인턴 평가 시 [즉시 지원 가능한 실무 스킬]과 [기초 프로젝트 지원 경험]을 가장 우선시합니다.'
           },
-          '사무행정': {
-            analysis: `제출된 서류에서 <b>사무행정 직무</b>에 필수적인 문서 작성 및 데이터 관리 경험이 확인됩니다. 업무 정확도와 프로세스 개선 관점에서 구성했습니다.`,
-            opinion1: `데이터 입력이나 서류 관리 경험 작성 시 '오차율 0%', '처리 시간 단축' 등의 수치화된 성과 표현을 반영하는 것을 권장합니다.`,
-            opinion2: `조직 내 원활한 소통과 서포트 경험을 강조하여 협업 능력을 함께 어필하는 것이 효과적입니다.`,
-            draft1: `"사무행정 직무의 핵심은 신속하고 정확한 업무 처리 능력입니다. 경기인력개발원 훈련에서 [${resumeInfo.extractedTools}] 기반의 행정 문서 작성 및 데이터 관리 실무를 이수하며 인프라를 갖추었습니다."`,
-            draft2: `"입사 후 체계적인 문서 정리와 꼼꼼한 일정 관리를 통해 부서 전체의 업무 효율을 극대화하는 행정 전문가로 성장하겠습니다."`,
-            review: `"행정 직무는 꼼꼼함과 문서 관리 능력이 생명입니다. 본인이 수행했던 과업을 바탕으로 업무 정확도를 입증할 수 있도록 추천 수정안을 활용해 보세요."`,
-            strength: `행정 표준 문서 작성 능력 및 데이터 체계적 관리 역량 보유`,
-            weakness: `업무 처리 방식에 대한 단순 서술을 넘어 구체적인 처리 규모나 수치 성과 보완 필요`,
-            interview: `"다수의 업무가 한 번에 몰렸을 때 우선순위를 정하는 본인만의 기준은 무엇인가?"에 대해 준비해 보세요.`
-          },
-          '회계·경리': {
-            analysis: `제출된 내용에서 <b>회계·경리 직무</b> 관련 수치 다루기 및 세무/회계 프로그램 활용 경험이 확인됩니다. 신뢰성과 정교함에 초점을 맞추었습니다.`,
-            opinion1: `전표 처리, 결산 지원, 회계 프로그램(더존, 세무사랑 등) 활용 능력을 앞부분에 명확히 명시하는 것이 유리합니다.`,
-            opinion2: `숫자를 다루는 직무 특성에 맞춰 오류 최소화 노력과 정밀한 서류 검토 사례를 보완할 것을 권장합니다.`,
-            draft1: `"회계 직무 수행의 핵심은 정교한 수치 검증과 신뢰성 확보입니다. 경기인력개발원에서 [${resumeInfo.extractedTools}] 관련 과목을 이수하며 정확한 자금 처리 및 전표 입력 능력을 다졌습니다."`,
-            draft2: `"입사 후 철저한 규정 준수와 세심한 전표 검토를 통해 투명하고 오류 없는 회계 관리를 실현하겠습니다."`,
-            review: `"회계/경리는 리스크를 줄이는 신뢰감이 중요합니다. 본인의 수치 감각과 프로그램 사용 능력이 확실하게 드러나도록 지원서를 구성해 보세요."`,
-            strength: `전표 처리 및 회계 이론/프로그램 기본 활용 실무력 보유`,
-            weakness: `마감 기한 준수 및 수치 오차 검증에 대한 본인만의 노하우를 추가 기술하면 좋음`,
-            interview: `"자금/회계 처리 과정에서 발생할 수 있는 오류를 방지하기 위해 어떤 절차를 거치는가?"에 대비하세요.`
-          },
-          '영업·마케팅': {
-            analysis: `제출된 서류에서 <b>영업·마케팅 직무</b>에 요구되는 시장 분석 및 고객 커뮤니케이션 경험이 파악됩니다. 기획력과 성과 창출 관점으로 재구성했습니다.`,
-            opinion1: `마케팅/영업 성과 기술 시 반응률, 매출 기여, 데이터 분석 수치 등을 연결하여 설득력을 높이는 것이 좋습니다.`,
-            opinion2: `고객 니즈 분석 사례와 매체/채널 활용 경험을 구체적인 예시로 보완하는 것을 권장합니다.`,
-            draft1: `"영업·마케팅 직무의 핵심은 시장 흐름 파악과 고객 중심의 설득력입니다. 경기인력개발원 훈련 과정에서 [${resumeInfo.extractedTools}] 기반의 분석 및 기획 프로젝트를 수행하며 실무 감각을 키웠습니다."`,
-            draft2: `"입사 후 차별화된 시장 타깃팅 분석과 능동적인 영업 전략을 통해 타깃 고객 유치 목표를 달성하겠습니다."`,
-            review: `"영업 및 마케팅은 숫자와 결과로 증명하는 직무입니다. 작성하신 프로젝트 내에서 본인이 이끌어낸 변화나 반응을 명확히 제시해 보세요."`,
-            strength: `시장 분석 감각 및 커뮤니케이션 기반 기획 추진력 보유`,
-            weakness: `전략 수립 과정에서 수집했던 데이터나 분석 도구에 대한 서술 강화 필요`,
-            interview: `"우리 제품/서비스의 주요 타깃층을 설득하기 위해 어떤 전략을 사용할 것인가?" 질문에 대비해 보세요.`
-          },
-          '서비스·고객응대': {
-            analysis: `제출된 내용에서 <b>서비스 직무</b>에 필수적인 고객 소통 및 상황 대응 능력이 확인됩니다. 공감 능력과 문제 해결력 중심으로 정돈했습니다.`,
-            opinion1: `고객 응대 사례 작성 시, 난처한 상황을 원활하게 해결했던 구체적인 대화 방식이나 서비스 마인드를 서술하는 것이 좋습니다.`,
-            opinion2: `고객 만족도 향상이나 컴플레인 완화 사례를 구체화하면 경쟁력을 크게 향상시킬 수 있습니다.`,
-            draft1: `"서비스 직무의 핵심은 경청을 통한 고객 니즈 파악과 신속한 대응력입니다. 경기인력개발원 훈련을 통해 [${resumeInfo.extractedTools}] 관련 실습을 진행하며 상황별 응대 능력을 함양했습니다."`,
-            draft2: `"입사 후 항상 밝은 태도와 전문적인 고객 응대로 브랜드 호감도를 높이는 현장 전문가가 되겠습니다."`,
-            review: `"서비스 직무는 사람을 상대하는 유연성이 관건입니다. 본인이 보여준 진정성 있는 대응 사례를 강조해 지원서를 다듬어 보세요."`,
-            strength: `고객 친화적 소통 태도 및 상황 대응 실무 감각 보유`,
-            weakness: `고객 응대 중 발생했던 어려움을 슬기롭게 극복한 세부 에피소드 보완 추천`,
-            interview: `"까다로운 고객 요구가 들어왔을 때 원칙과 고객 만족 사이에서 어떻게 균형을 잡을 것인가?"에 준비해 보세요.`
-          },
-          '기타': {
-            analysis: `제출된 서류에서 <b>${role}</b> 직무 관련 기본 과업 이력과 실무 역량이 파악됩니다. 목표 달성과 성실성을 중심으로 구성했습니다.`,
-            opinion1: `담당했던 주요 과업의 목적과 수행 툴([${resumeInfo.extractedTools}])을 명확히 구분하여 서술하는 것을 권장합니다.`,
-            opinion2: `실무 적용 가능성을 어필하기 위해 과업 수행 결과를 정량적 수치로 가공하여 서술할 필요가 있습니다.`,
-            draft1: `"${role} 직무의 핵심은 맡은 과업에 대한 책임감과 신속한 실행력입니다. 경기인력개발원 교육과정에서 [${resumeInfo.extractedTools}] 관련 실습을 완수하며 실무 기초를 다졌습니다."`,
-            draft2: `"입사 후 철저한 업무 숙지와 성실성을 바탕으로 맡은 역할을 차질 없이 완수하는 직원이 되겠습니다."`,
-            review: `"지원서 작성 시 본인의 노력이 실무에 어떻게 연결되는지 보여주는 것이 중요합니다. 보완된 수정안을 바탕으로 자신 있게 지원해 보세요."`,
-            strength: `주요 과업 수행 능력 및 직무 교육 이수를 통한 기본기 보유`,
-            weakness: `과업 수행 결과의 정량적 표기 및 세부 액션 플랜 기술 보완 필요`,
-            interview: `"해당 직무에 지원하기 위해 가장 주력하여 준비한 역량은 무엇인가?" 질문에 대비하세요.`
+          '경력': {
+            focus: '정량적 성과(KPI), 문제 해결 사례, 프로젝트 리딩 경험, 즉시 전력감',
+            pref: '기업은 경력 평가 시 [주요 문제 해결 성과], [데이터 기반 성과 측정], [즉각적인 조직 기여도]를 정밀하게 평가합니다.'
           }
         };
 
-        const prof = roleProfiles[role] || roleProfiles['기타'];
+        // 직무 x 단계 맞춤 DB
+        const matrixDB = {
+          '사무행정': {
+            '신입': {
+              opinion1: `신입 지원서에서는 단순 '문서 작성 가능'보다는, 경기인력개발원 등 교육과정에서 이수한 엑셀/OA 실습 내용과 데이터 정밀 검토 노하우를 명확히 제시하는 것이 효과적입니다.`,
+              opinion2: `행정 지원 업무의 특성을 고려하여, 다수의 서류를 오차 없이 처리했던 경험이나 표준 문서 양식을 다뤄본 구체적 과업을 서술해 주세요.`,
+              draft1: `"경기인력개발원 사무행정 과정에서 [${resumeInfo.extractedTools}] 관련 실무 교육을 이수하며, 정확한 데이터 입력 및 서류 검토 역량을 구축했습니다."`,
+              draft2: `"체계적인 일정 관리와 꼼꼼한 문서 정리 능력을 바탕으로 부서원들의 실무 효율을 높이는 준비된 신입 행정 담당자가 되겠습니다."`,
+              review: `"신입 사무행정 지원자는 '오차 없는 정확함'과 '조직 지원 태도'가 핵심입니다. 교육과정에서 다룬 툴 활용 경험을 바탕으로 작성해 보세요."`,
+              strength: `사무 OA 툴 활용 능력 및 행정 표준 프로세스 이수 이력`,
+              weakness: `수행 과업의 정확도를 입증할 구체적 수치나 처리 규모 보완 필요`,
+              interview: `"다양한 서류 작업을 진행할 때 오류를 줄이기 위해 어떤 절차로 확인하는가?"에 대비하세요.`
+            },
+            '인턴': {
+              opinion1: `인턴 채용 시 실무진은 '즉시 서포트가 가능한가'를 봅니다. 문서 수정, 일상 행정 데이터 처리 경험을 앞부분에 배치하세요.`,
+              opinion2: `선배 직원의 업무 요청을 빠르게 이해하고 원활하게 협업했던 구체적 소통 경험을 보완할 필요가 있습니다.`,
+              draft1: `"[${resumeInfo.extractedTools}] 실무 능력을 바탕으로 단기 지원 업무에서도 정확하고 신속하게 과업을 지원할 수 있는 실무 준비성을 갖추었습니다."`,
+              draft2: `"원활한 팀 내 커뮤니케이션과 세심한 업무 보조를 통해 팀의 행정 부담을 줄이겠습니다."`,
+              review: `"인턴 지원서는 신속한 실무 서포트 능력을 보여주는 것이 관건입니다. 즉시 적용 가능한 OA 역량을 앞세워 보세요."`,
+              strength: `단기 실무 서포트가 가능한 기본 OA 능력 및 수용적인 태도`,
+              weakness: `상황별 업무 우선순위 판단 기준에 대한 보완 서술 권장`,
+              interview: `"여러 지시가 동시에 내려왔을 때 인턴으로서 어떻게 업무 우선순위를 잡겠는가?"`
+            },
+            '경력': {
+              opinion1: `경력직 서류에서는 단순 업무 나열을 피하고, 행정 프로세스 개선, 비용 절감, 또는 데이터 관리 체계화 성과를 정량 수치로 증명해야 합니다.`,
+              opinion2: `타 부서와의 협업 조율 사례 및 자원 관리 역량을 강조하여 실무 리더십을 드러내세요.`,
+              draft1: `"사무행정 분야의 경력자로서 [${resumeInfo.extractedTools}] 기반의 데이터 관리 및 행정 공정 개선을 통해 업무 효율을 높인 경험이 있습니다."`,
+              draft2: `"축적된 행정 관리 노하우를 바탕으로 전사 행정 시스템 표준화 및 운영 리스크 최소화에 기여하겠습니다."`,
+              review: `"경력직 사무행정은 '개선 성과(KPI)'와 '체계화 능력'이 핵심입니다. 프로세스를 효율화했던 구체적 성과 수치를 강조해 보세요."`,
+              strength: `실무 행정 프로세스 전반에 대한 높은 이해도 및 관리 경험`,
+              weakness: `개선 성과에 대한 정량적 수치(시간 단축, 오차 감소 등) 보완 필요`,
+              interview: `"기존 조직의 행정 프로세스 중 본인이 직접 효율화했던 사례와 그 성과는 무엇인가?"`
+            }
+          },
+          'IT·개발': {
+            '신입': {
+              opinion1: `신입 개발자 서류는 사용 가능한 기술 스택(Java, Python 등)과 훈련 과정에서 직접 구현해본 프로젝트의 핵심 로직을 명확히 명시하는 것이 필수적입니다.`,
+              opinion2: `프로젝트 진행 중 발생했던 오류(버그)를 분석하고 해결했던 개발 학습 역량을 구체화해 주세요.`,
+              draft1: `"경기인력개발원 개발 과정에서 [${resumeInfo.extractedTools}] 기술을 활용하여 구현 프로젝트를 완수하며 실무 개발 기반을 다졌습니다."`,
+              draft2: `"지속적인 기술 학습과 신속한 문제 해결 태도로 안정적인 코드를 작성하는 신입 개발자가 되겠습니다."`,
+              review: `"신입 개발자는 기술을 빠르게 습득하는 역량과 코드 구현 의지가 중요합니다. 프로젝트 내 본인의 구체적 역할과 구현 기능을 명확히 기술하세요."`,
+              strength: `주요 개발 언어 및 프레임워크 기초 활용 능력 보유`,
+              weakness: `문제 발생 시 디버깅 방식과 해결 논리에 대한 세부 서술 필요`,
+              interview: `"프로젝트 진행 중 발생한 가장 기억에 남는 버그와 이를 해결한 과정은 무엇인가?"`
+            },
+            '인턴': {
+              opinion1: `개발 인턴은 깃허브(GitHub) 등 코드 관리 도구 활용 능력과 기존 코드베이스에 빠르게 적응할 수 있는 협업 능력을 어필하는 것이 유리합니다.`,
+              opinion2: `단순 이론 지식이 아닌 실제 코딩 테스트나 토이 프로젝트에서 구현해본 기능 단위를 강조하세요.`,
+              draft1: `"[${resumeInfo.extractedTools}] 기반의 개발 프로젝트 참여를 통해 협업 흐름을 이해하고 코드 정밀도를 높이는 연습을 지속해왔습니다."`,
+              draft2: `"팀의 코드 컨벤션을 철저히 준수하며 부여된 개발 과업을 신속히 완수하겠습니다."`,
+              review: `"개발 인턴은 협업 준비도와 기초 개발 역량이 핵심 평가 항목입니다. 코드 관리 방식과 구현 경험을 부각해 보세요."`,
+              strength: `개발 언어 실습 경험 및 원활한 코드 서포트 가능성`,
+              weakness: `협업 툴(Git, Issue Tracker 등) 활용 경험에 대한 추가 기술 권장`,
+              interview: `"팀 프로젝트 수행 시 다른 개발자와의 코드 충돌이나 의견 차이를 어떻게 해결했는가?"`
+            },
+            '경력': {
+              opinion1: `경력 개발자는 시스템 아키텍처 설계, 성능 최적화(TPS 향상, 쿼리 개선 등), 서비스 안정화 성과를 구체적인 데이터로 제시해야 합니다.`,
+              opinion2: `신규 기술 도입 사례나 레거시 코드 리팩토링 프로젝트 경험을 중심으로 기술적 깊이를 서술하세요.`,
+              draft1: `"개발 경력자로서 [${resumeInfo.extractedTools}] 아키텍처 기반의 서비스 최적화 및 트래픽 안정화를 다수 이끌어냈습니다."`,
+              draft2: `"기술적 깊이와 효율적인 시스템 설계를 통해 비즈니스 목표에 직결되는 고성능 서비스를 구축하겠습니다."`,
+              review: `"경력 개발자 서류의 핵심은 '기술적 성과와 아키텍처 수준'입니다. 서비스 규모와 성능 개선 수치를 정밀하게 기재해 보세요."`,
+              strength: `시스템 구축 및 서비스 안정화 경험 보유`,
+              weakness: `트래픽 처리 규모, 성능 개선율 등 정량 수치 데이터 강화 필요`,
+              interview: `"대규모 서비스 운영 중 성능 병목이 발생했을 때 이를 진단하고 최적화했던 기술적 경험은?"`
+            }
+          },
+          '디자인': {
+            '신입': {
+              opinion1: `신입 디자이너 서류는 디자인 툴(Photoshop, Illustrator, Figma 등) 활용 능력과 함께 디자인 컨셉을 도출해낸 기획 의도를 명확히 기술해야 합니다.`,
+              opinion2: `포트폴리오와 연결되는 작업물의 시각적 표현 방식 및 타깃 분석 과정을 제시해 주세요.`,
+              draft1: `"경기인력개발원 디자인 과정을 통해 [${resumeInfo.extractedTools}] 툴을 익히고, 타깃에 최적화된 시각 디자인 프로젝트를 수행했습니다."`,
+              draft2: `"창의적인 시각 구성과 브랜드 이해도를 바탕으로 시각적 완성도가 높은 디자인을 제작하겠습니다."`,
+              review: `"신입 디자이너는 시각적 감각과 함께 기획 의도를 전달하는 능력이 중요합니다. 포트폴리오의 제작 컨셉을 서류에 잘 다듬어 담아내세요."`,
+              strength: `디자인 툴 표준 활용 및 시각 결과물 제작 능력`,
+              weakness: `디자인 컨셉 도출 과정에 대한 논리적 설명 보완 필요`,
+              interview: `"본인이 제작한 디자인 작업물 중 가장 자신 있는 작품의 기획 의도는 무엇인가?"`
+            },
+            '인턴': {
+              opinion1: `디자인 인턴은 실무 시안 제작의 신속성과 브랜드 가이드라인 준수 능력을 중심으로 작성하는 것이 좋습니다.`,
+              opinion2: `피드백 수용 자세와 커뮤니케이션 능력을 함께 어필하여 협업 태도를 보여주세요.`,
+              draft1: `"[${resumeInfo.extractedTools}] 활용 능력을 바탕으로 브랜드 가이드에 맞는 시안을 신속하게 제작할 수 있는 유연성을 갖추었습니다."`,
+              draft2: `"실무진의 피드백을 적극 반영하여 완성도 높은 제작물을 시의적절하게 지원하겠습니다."`,
+              review: `"인턴 지원자는 가이드라인을 잘 반영하는 신속성과 협업 태도가 평가 기준입니다."`,
+              strength: `시안 제작 속도 및 유연한 디자인 서포트 능력`,
+              weakness: `다양한 매체(웹, 모바일, 인쇄 등)에 대한 대응 경험 보완 권장`,
+              interview: `"제작한 디자인 시안에 대해 수정 요청이 크게 들어왔을 때 어떻게 대처하는가?"`
+            },
+              '경력': {
+              opinion1: `경력 디자이너는 브랜드 리뉴얼 성과, 전환율(CTR/CVR) 개선, UI/UX 개선에 따른 사용자 지표 변화를 제시해야 합니다.`,
+              opinion2: `디자인 시스템 구축 및 프로젝트 총괄 리딩 경험을 부각하세요.`,
+              draft1: `"디자인 경력자로서 [${resumeInfo.extractedTools}] 기반의 브랜딩 및 UI/UX 개선을 주도하며 사용자 지표 향상을 이끌었습니다."`,
+              draft2: `"일관성 있는 디자인 시스템 구축과 고도화된 디렉팅으로 브랜드 가치를 대폭 끌어올리겠습니다."`,
+              review: `"경력 디자이너는 디자인이 비즈니스 성과(전환율, 브랜드 가치)에 미친 영향을 보여주는 것이 가장 강력합니다."`,
+              strength: `디자인 프로젝트 총괄 및 비즈니스 성과 창출 경험`,
+              weakness: `디자인 개선에 따른 구체적 수치 지표(클릭률, 매출 기여 등) 보완 필요`,
+              interview: `"디자인 시스템을 구축하거나 기존 디자인 정체성을 전면 수정했던 경험이 있는가?"`
+            }
+          }
+        };
 
-        // 1. 서류 세부 분석
+        // 선택된 직무가 DB에 없을 경우 기본 템플릿 사용
+        const defaultRole = matrixDB[role] ? matrixDB[role][level] : {
+          opinion1: `${role} 직무 지원 시, 수행했던 주요 과업([${resumeInfo.extractedTools}])과 자신의 실무 기여점을 명확히 연결해야 합니다.`,
+          opinion2: `${level} 지원 단계의 요구 기준에 맞춰 과업 성과 및 구체적인 모범 사례를 보완해 주세요.`,
+          draft1: `"${role} 직무 역량을 높이기 위해 [${resumeInfo.extractedTools}] 관련 실무 체계를 습득하고 과업을 성공적으로 이수했습니다."`,
+          draft2: `"${level} 직무 담당자로서 책임감 있는 자세로 실무 성과를 꾸준히 도출하겠습니다."`,
+          review: `"${role} 지원서는 직무 요구사항과 본인의 경험이 얼마나 맞닿아 있는지를 보여주는 것이 핵심입니다."`,
+          strength: `${role} 관련 기초 실무 이해도 및 과업 수행 능력`,
+          weakness: `수행 과업의 구체적 성과 지표 보완 필요`,
+          interview: `"${role} 직무에 있어서 본인이 가진 가장 차별화된 경쟁력은 무엇인가?"`
+        };
+
+        const prof = defaultRole;
+        const levelData = levelGuide[level] || levelGuide['신입'];
+
+        // 요약표 업데이트
+        $('tbDiagnosis').textContent = `${role} 직무 / ${level} 지원 서류 진단 완료`;
+        $('tbFocus').textContent = levelData.focus;
+
+        // 1. 서류 분석
         $('fourSectionAnalysis').innerHTML = `
           <ul style="padding-left:18px; font-size:13.5px; color:#334155; line-height:1.8;">
-            <li><b>① 직무 경험 진단:</b> ${prof.analysis}</li>
-            <li><b>② 핵심 사용 역량:</b> 작성 내용 중 [${resumeInfo.extractedTools}] 항목이 주요 역량 지표로 확인됩니다.</li>
-            <li><b>③ 지원 성향 및 기여점:</b> 단순 기본 이력을 넘어 지원 분야에서의 구체적 과업 완수 의지가 파악됩니다.</li>
-            <li><b>④ 문장 구성도:</b> 핵심 성과와 실무 적용 방안 중심으로 문장의 정밀도를 향상시켰습니다.</li>
+            <li><b>① 직무 선호도 분석:</b> ${levelData.pref}</li>
+            <li><b>② 주요 기술 및 툴 역량:</b> 작성 내용 중 [${resumeInfo.extractedTools}] 요소가 핵심 직무 지표로 진단됩니다.</li>
+            <li><b>③ 실무 적합성 진단:</b> ${role} 직무에서 요구하는 핵심 과업 이해도가 타당하게 반영되어 있습니다.</li>
+            <li><b>④ 표현 및 구성력:</b> ${level} 채용에 맞춰 전문성과 성과 위주의 문장 구성으로 향상시켰습니다.</li>
           </ul>
         `;
 
-        // 2. 세부 문장 첨삭 의견 (인적사항 언급 완전히 삭제)
+        // 2. 세부 문장 첨삭 의견
         $('opinionList').innerHTML = `
           <div class="opinion-item">
-            <h5>📌 첨삭 의견 1: 직무 핵심 역량 및 활용 툴 중심 문장 재구성</h5>
+            <h5>📌 첨삭 가이드 1: ${role} 직무 핵심 역량 강조</h5>
             <p>${prof.opinion1}</p>
           </div>
           <div class="opinion-item">
-            <h5>📌 첨삭 의견 2: 구체적 문제 해결 과정 및 성과 수치 보완</h5>
+            <h5>📌 첨삭 가이드 2: ${level} 지원 단계별 실무 요구사항 반영</h5>
             <p>${prof.opinion2}</p>
           </div>
         `;
 
-        // 3. 완성형 수정안 (개인정보 관련 언급 소거)
+        // 3. 완성형 수정안
         $('draftList').innerHTML = `
           <div class="draft-box">
             <h5>✅ 완성형 수정안 1 (자기소개서 도입부 추천)</h5>
             <div class="draft-content">${prof.draft1}</div>
           </div>
           <div class="draft-box">
-            <h5>✅ 완성형 수정안 2 (입사 후 포부 및 기여점 추천)</h5>
+            <h5>✅ 완성형 수정안 2 (입사 후 포부 및 실무 기여 추천)</h5>
             <div class="draft-content">${prof.draft2}</div>
           </div>
         `;
 
         // 4. 종합 총평 및 심층 피드백
-        $('overallReview').innerHTML = `<b>👨‍🏫 담당 교사 총평:</b><br>${prof.review}`;
+        $('overallReview').innerHTML = `<b>👨‍🏫 담당 교사 종합 전략 (${role} / ${level}):</b><br>${prof.review}`;
         $('strengthText').innerHTML = prof.strength;
         $('weaknessText').innerHTML = prof.weakness;
         $('interviewText').innerHTML = prof.interview;
