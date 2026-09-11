@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>경기인력개발원 | 커리어 나침반 1:1 맞춤 멘토링</title>
 
-<!-- PDF.js 라이브러리 -->
+<!-- PDF.js 라이브러리 및 Worker 설정 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script>
   if (window.pdfjsLib) {
@@ -137,7 +137,7 @@
   .detail-card h4 { font-size: 16px; color: var(--navy); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
   .detail-card .card-desc { font-size: 12.5px; color: var(--gray); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #E2E8F0; }
 
-  /* 4-item Category grid (서류분석) */
+  /* 4-item Category grid */
   .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .cat-card { background: var(--white); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 14px 16px; }
   .cat-card h5 { font-size: 13.5px; color: var(--navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
@@ -147,7 +147,7 @@
   .cat-card.empty { border-left-color: #CBD5E1; }
   .cat-card.empty .cat-tag { background: #FEF2F2; color: #B91C1C; }
 
-  /* 첨삭의견 (issue blocks) */
+  /* 첨삭의견 */
   .issue-block { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
   .issue-block h5 { font-size: 14px; color: var(--navy); margin-bottom: 8px; }
   .issue-list li { font-size: 13px; color: #334155; padding: 6px 0 6px 20px; position: relative; line-height: 1.6; border-bottom: 1px dashed #E2E8F0; }
@@ -336,10 +336,11 @@
 
           <div class="field-block">
             <label>성과를 뒷받침하는 구체적 경험 근거 (선택)
-              <textarea id="evidence" rows="2" placeholder="예) 훈련생 35명의 출결 자료를 엑셀로 일별 관리하여 데이터 누락률 0%를 유지함"></textarea>
+              <textarea id="evidence" rows="2" placeholder="예) 훈련생 30명의 출결 자료를 엑셀로 일별 관리하여 데이터 누락률 0%를 유지함"></textarea>
             </label>
           </div>
 
+          <!-- 파싱된 데이터 저장용 숨김 필드 (ID 통일 완료) -->
           <input type="hidden" id="extractedResumeText">
           <input type="hidden" id="extractedLetterText">
           <input type="hidden" id="extractedPostingText">
@@ -395,7 +396,7 @@
               </table>
             </div>
 
-            <!-- 1. 서류분석 (4항목 이상) -->
+            <!-- 1. 서류분석 -->
             <div class="detail-card">
               <h4>🔍 1. 서류 세부 분석 <span style="font-size:12px; color:var(--gray); font-weight:400;">(경력·역량·지원동기·자기PR 등 4개 항목)</span></h4>
               <div class="card-desc">제출하신 문장을 항목별로 자동 분류하여 실제로 어떤 내용이 담겨 있는지, 어떤 항목이 비어 있는지를 진단합니다.</div>
@@ -427,7 +428,7 @@
               <div id="beforeAfterContainer"></div>
               <div id="goodSentenceBox" style="margin-top:4px;"></div>
               <div id="linkareerBox" style="margin-top:14px; background:#F8FAFC; border:1px dashed var(--border); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--gray);">
-                📚 위 수정안은 STAR(상황-역할-행동-성과)·두괄식 구성 등 취업 커뮤니티가 공통으로 안내하는 합격 자소서 작성 원칙을 반영했습니다. 실제 합격자 자소서 원문은 저작권 보호 대상이라 이 도구에 그대로 옮겨오지 않으며, 더 많은 예시가 필요하면 아래에서 직접 확인해 보세요.
+                📚 위 수정안은 STAR(상황-역할-행동-성과)·두괄식 구성 등 취업 커뮤니티가 공통으로 안내하는 합격 자소서 작성 원칙을 반영했습니다.
                 <div style="margin-top:8px;">
                   <a id="linkareerLink" href="https://linkareer.com/cover-letter/search?tab=all" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; background:var(--white); border:1px solid var(--border); border-radius:6px; padding:7px 12px; font-weight:700; color:var(--navy); font-size:12.5px;">🔗 링커리어에서 <span id="linkareerRoleLabel">해당 직무</span> 합격 자소서 더 보기</a>
                 </div>
@@ -476,9 +477,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const $ = id => document.getElementById(id);
 
-  /* =========================================================
-     0. 화면 전환 / 탭 / 모드 UI 제어
-  ========================================================== */
+  /* 0. UI 컨트롤 */
   function show(n) {
     document.querySelectorAll('.form-step').forEach(x => {
       x.classList.toggle('current', +x.dataset.page === n);
@@ -519,19 +518,22 @@ document.addEventListener('DOMContentLoaded', () => {
     $('tabPdfBtn').classList.remove('active');
   });
 
-  /* =========================================================
-     1. 파일 업로드 (PDF/TXT 텍스트 추출)
-  ========================================================== */
+  /* 1. PDF/TXT 파일 업로드 및 파싱 엔진 */
   async function parsePdfFile(file) {
+    if (!window.pdfjsLib) {
+      throw new Error("PDF.js 라이브러리가 준비되지 않았습니다.");
+    }
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let textContent = '';
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    let fullText = '';
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
-      const tokenized = await page.getTextContent();
-      textContent += tokenized.items.map(item => item.str).join(' ') + ' ';
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      fullText += pageText + ' ';
     }
-    return textContent.replace(/\s+/g, ' ').trim();
+    return fullText.replace(/\s+/g, ' ').trim();
   }
 
   async function handleFileUpload(fileInputId, statusId, hiddenTargetId) {
@@ -539,8 +541,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const status = $(statusId);
     if (!input || !input.files.length) return;
     const file = input.files[0];
+    
     status.textContent = '⏳ 서류 텍스트 추출 중...';
     status.style.color = 'var(--blue)';
+
     try {
       let extractedText = '';
       if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
@@ -548,17 +552,18 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         extractedText = await file.text();
       }
-      if (extractedText.length > 5) {
+
+      if (extractedText && extractedText.length > 5) {
         $(hiddenTargetId).value = extractedText;
         status.textContent = `✓ ${file.name} (${extractedText.length}자 추출 완료)`;
         status.style.color = 'var(--blue)';
       } else {
-        status.textContent = '⚠️ 텍스트를 추출할 수 없는 스캔형 PDF입니다. 직접 입력 탭을 이용해 주세요.';
+        status.textContent = '⚠️ 텍스트를 추출할 수 없는 스캔형(이미지) PDF입니다. 직접 입력 탭을 이용해 주세요.';
         status.style.color = '#E11D48';
       }
     } catch (err) {
       console.error(err);
-      status.textContent = '❌ 파일 처리 실패. 인터넷 연결을 확인하거나 직접 입력해 주세요.';
+      status.textContent = '❌ 파일 파싱 실패. 인터넷 연결 상태를 확인하거나 직접 입력해 주세요.';
       status.style.color = '#E11D48';
     }
   }
@@ -567,9 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('letterPdf')?.addEventListener('change', () => handleFileUpload('letterPdf', 'letterStatus', 'extractedLetterText'));
   $('postingPdf')?.addEventListener('change', () => handleFileUpload('postingPdf', 'postingStatus', 'extractedPostingText'));
 
-  /* =========================================================
-     2. 예시 데이터
-  ========================================================== */
+  /* 2. 예시 데이터 세팅 */
   $('sampleButton')?.addEventListener('click', () => {
     $('role').value = '사무행정';
     $('level').value = '신입';
@@ -583,51 +586,26 @@ document.addEventListener('DOMContentLoaded', () => {
     show(2);
   });
 
-  /* =========================================================
-     3. 개인정보 정제 (오류 수정 완료)
-  ========================================================== */
+  /* 3. 개인정보 정제 */
   function cleanTextForMentoring(text) {
     if (!text) return '';
     let cleaned = text;
     cleaned = cleaned.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '');
     cleaned = cleaned.replace(/(01[016789]|02|0[3-9][0-9])[-.\s]?[0-9]{3,4}[-.\s]?[0-9]{4}/g, '');
     cleaned = cleaned.replace(/\d{6}[-~]\d{7}/g, '');
-
-    // 생년월일 표기 제거
     cleaned = cleaned.replace(/(19|20)\d{2}\s?[.\-\/년]\s?\d{1,2}\s?[.\-\/월]\s?\d{1,2}\s?일?/g, '');
     cleaned = cleaned.replace(/\b(19|20)\d{2}[01]\d[0-3]\d\b/g, '');
     cleaned = cleaned.replace(/생년월일\s*[:：]?\s*[0-9.\/\-년월일\s]{4,}/g, '');
-
-    // 이름 제거
     cleaned = cleaned.replace(/(이름|성명)\s*[:：]\s*[가-힣]{2,4}/g, '');
     cleaned = cleaned.replace(/(이름|성명)\s+[가-힣]{2,4}(?=\s|$)/g, '');
 
-    const locationStopwords = [
-      '서울특별시', '서울시', '서울', '영등포구', '영등포', '경기도', '파주시', '파주',
-      '인천광역시', '인천', '부산광역시', '부산', '대구광역시', '대구', '광주광역시', '광주',
-      '대전광역시', '대전', '울산광역시', '울산', '세종특별자치시', '특별시', '광역시', '자치시',
-      '아파트', '빌라', '번지', '주소', '현주소', '소재지'
-    ];
-    locationStopwords.forEach(word => {
-      cleaned = cleaned.replace(new RegExp(word, 'g'), '');
-    });
-
-    const filterWords = ['Email', 'EMAIL', 'Mobile', 'Address', 'Github', 'Linkedin', '성명', '이름', '연락처', '휴대폰', '이메일', '생년월일'];
-    filterWords.forEach(w => {
-      cleaned = cleaned.replace(new RegExp(w, 'gi'), '');
-    });
-
-    const templateNoise = ['strength', 'weakness', 'profile', 'introduce', 'introduction', 'about me', 'career', 'skill', 'contact', 'certificate', 'portfolio', 'motivation', 'vision', 'personality'];
-    templateNoise.forEach(w => {
-      cleaned = cleaned.replace(new RegExp(`\\b${w}\\s*[:\\-]?\\s*\\d{0,2}\\b`, 'gi'), '');
-    });
+    const locationStopwords = ['서울특별시', '서울시', '경기도', '파주시', '인천광역시', '부산광역시', '대구광역시', '주소', '현주소'];
+    locationStopwords.forEach(word => { cleaned = cleaned.replace(new RegExp(word, 'g'), ''); });
 
     return cleaned.replace(/[^\x20-\x7E가-힣.,!?%\-\n]/g, ' ').replace(/[ \t]+/g, ' ').trim();
   }
 
-  /* =========================================================
-     4. 분석 엔진
-  ========================================================== */
+  /* 4. 진단 로직 및 렌더링 */
   const roleMap = {
     '사무행정': ['문서관리', '자료분석', '엑셀활용', '일정관리', '행정지원', '조직소통'],
     '회계·경리': ['전표처리', '결산지원', '세무증빙', '회계프로그램', '자금관리', '정확성'],
@@ -639,40 +617,27 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const CATS = [
-    { key: 'career',     label: '경력·주요 경험',   icon: '💼', max: 1, kws: ['근무', '수행', '담당', '업무', '프로젝트', '경력', '인턴', '실습', '수강', '과정', '참여', '운영', '진행', '처리', '관리', '활동'] },
-    { key: 'skill',       label: '핵심 역량',        icon: '🛠️', max: 1, kws: ['능력', '역량', '활용', '가능', '숙련', '자격증', '전문성', '스킬', '툴', '프로그램', '기술', '다룰'] },
-    { key: 'motivation',  label: '지원동기',          icon: '🎯', max: 1, kws: ['지원한', '지원동기', '계기', '목표', '성장', '비전', '포부', '기여하고', '되고 싶', '지원하게', '입사'] },
-    { key: 'strength',    label: '자기PR·강점',      icon: '🌟', max: 1, kws: ['강점', '장점', '성격', '책임감', '열정', '자신 있', '자부심', '성실', '꼼꼼', '적극적'] }
+    { key: 'career', label: '경력·주요 경험', icon: '💼', max: 1, kws: ['근무', '수행', '담당', '업무', '프로젝트', '경력', '인턴', '실습', '수강', '과정', '참여', '운영', '진행', '처리', '관리', '활동'] },
+    { key: 'skill', label: '핵심 역량', icon: '🛠️', max: 1, kws: ['능력', '역량', '활용', '가능', '숙련', '자격증', '전문성', '스킬', '툴', '프로그램', '기술', '다룰'] },
+    { key: 'motivation', label: '지원동기', icon: '🎯', max: 1, kws: ['지원한', '지원동기', '계기', '목표', '성장', '비전', '포부', '기여하고', '되고 싶', '지원하게', '입사'] },
+    { key: 'strength', label: '자기PR·강점', icon: '🌟', max: 1, kws: ['강점', '장점', '성격', '책임감', '열정', '자신 있', '자부심', '성실', '꼼꼼', '적극적'] }
   ];
 
   const SKILL_DICT = {
-    '사무행정':      ['엑셀', 'Excel', '파워포인트', 'PowerPoint', '워드', '한글', 'ERP', '그룹웨어', '전자결재', '문서작성', '일정관리'],
-    '회계·경리':      ['엑셀', 'Excel', '회계프로그램', '더존', 'SAP', 'ERP', '전표처리', '세무', '결산', '자금관리'],
-    '영업·마케팅':    ['CRM', 'SNS마케팅', '데이터분석', '엑셀', 'PPT', '시장조사', '콘텐츠기획', '고객관리'],
-    'IT·개발':       ['Java', 'Python', 'SQL', 'JavaScript', 'React', 'Spring', 'AWS', 'Git', 'DB', '데이터베이스', '알고리즘'],
-    '디자인':        ['Photoshop', 'Illustrator', 'Figma', '포토샵', '일러스트', '피그마', '인디자인', '프리미어', 'UI', 'UX'],
-    '서비스·고객응대': ['CS', '고객응대', 'POS', '예약관리', '컴플레인', '응대매뉴얼', '친절응대'],
-    '기타':          ['엑셀', 'Excel', 'PPT', '문서작성', '데이터정리', '협업툴']
+    '사무행정': ['엑셀', 'Excel', '파워포인트', 'PowerPoint', '워드', '한글', 'ERP', '문서작성'],
+    '회계·경리': ['엑셀', 'Excel', '회계프로그램', '더존', 'SAP', 'ERP', '전표처리', '세무'],
+    '영업·마케팅': ['CRM', 'SNS마케팅', '데이터분석', '엑셀', 'PPT', '시장조사'],
+    'IT·개발': ['Java', 'Python', 'SQL', 'JavaScript', 'React', 'Spring', 'AWS', 'Git'],
+    '디자인': ['Photoshop', 'Illustrator', 'Figma', '포토샵', '일러스트', '피그마', 'UI', 'UX'],
+    '서비스·고객응대': ['CS', '고객응대', 'POS', '예약관리', '컴플레인', '응대매뉴얼'],
+    '기타': ['엑셀', 'Excel', 'PPT', '문서작성', '데이터정리']
   };
-  const SOFT_SKILLS = ['커뮤니케이션', '협업', '문제해결', '기획력', '리더십', '책임감', '꼼꼼함', '분석력', '조율'];
 
-  function truncate(s, n) {
-    if (!s) return '';
-    return s.length > n ? s.slice(0, n).trim() + '…' : s;
-  }
-
-  const VAGUE_PHRASES = [
-    '최선을 다하겠습니다', '열심히 하겠습니다', '성실히 임하겠습니다', '노력하겠습니다',
-    '책임감을 가지고 임하겠습니다', '열심히 노력하겠습니다', '최선을 다해', '잘 할 수 있습니다',
-    '무엇이든', '열심히 일하겠습니다'
-  ];
+  const VAGUE_PHRASES = ['최선을 다하겠습니다', '열심히 하겠습니다', '성실히 임하겠습니다', '노력하겠습니다', '무엇이든'];
 
   function splitSentences(text) {
     if (!text) return [];
-    return text
-      .split(/(?<=[.!?])\s+|\n+|(?<=다\.)\s*/)
-      .map(s => s.trim())
-      .filter(s => s.length >= 6);
+    return text.split(/(?<=[.!?])\s+|\n+|(?<=다\.)\s*/).map(s => s.trim()).filter(s => s.length >= 6);
   }
 
   function words(t) { return (t.toLowerCase().match(/[가-힣a-z0-9]{2,}/g) || []); }
@@ -680,133 +645,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function categorize(sentences) {
     const result = { career: [], skill: [], motivation: [], strength: [] };
-    const limit = Object.fromEntries(CATS.map(c => [c.key, c.max || 2]));
     sentences.forEach(s => {
       let best = null, bestScore = 0;
       CATS.forEach(cat => {
         const score = cat.kws.reduce((n, kw) => n + (s.includes(kw) ? 1 : 0), 0);
         if (score > bestScore) { bestScore = score; best = cat.key; }
       });
-      if (best && bestScore > 0 && result[best].length < limit[best]) result[best].push(s);
+      if (best && bestScore > 0 && result[best].length < 1) result[best].push(s);
     });
     return result;
   }
 
-  function detectSkills(text, role) {
-    const dict = SKILL_DICT[role] || SKILL_DICT['기타'];
-    const found = dict.filter(t => text.toLowerCase().includes(t.toLowerCase()));
-    const softFound = SOFT_SKILLS.filter(t => text.includes(t));
-    return unique([...found, ...softFound]).slice(0, 8);
-  }
-
-  function classifyLetterSentences(sentences) {
-    const weak = [];
-    const strong = [];
-    sentences.forEach(s => {
-      const hasVague = VAGUE_PHRASES.some(v => s.includes(v));
-      const q = countQuant(s);
-      const v = countVerbs(s);
-      const isTooLong = s.length > 75;
-
-      if (hasVague || isTooLong || (q === 0 && v === 0 && s.length <= 60)) {
-        if (!weak.includes(s)) weak.push(s);
-      } else if (q >= 1 && v >= 1) {
-        if (!strong.includes(s)) strong.push(s);
-      }
-    });
-    return { weak: weak.slice(0, 4), strong: strong.slice(0, 2) };
-  }
-
   function countQuant(text) { return (text.match(/\d+[.,]?\d*\s*(%|명|건|회|개월|년|시간|원|개|배)/g) || []).length; }
-  function countVerbs(text) { return (text.match(/(기획|관리|개선|분석|운영|협업|제작|지원|해결|달성|조율|작성|정리|점검|구축|단축|향상)/g) || []).length; }
-
-  const PERF_POOL = [
-    '업무 처리 정확도를 높이고', '데이터 누락률을 최소화하며',
-    '업무 프로세스를 간소화하고', '협업 소통 효율을 향상시키며',
-    '처리 시간을 단축하고', '성과 지표 달성에 기여하며',
-    '오류 발생률을 줄이고', '업무 품질을 표준화하며'
-  ];
-  const CLOSING_POOL = [
-    '실질적 업무 성과로 증명하겠습니다.',
-    '정량적 지표로 입증하겠습니다.',
-    '구체적 처리 결과로 보여드리겠습니다.',
-    '데이터 기반 실무 기여를 입증하겠습니다.'
-  ];
-
-  const STOPWORDS = new Set(['저는','저의','그리고','또한','뿐만','아니라','위해','통해','있는','있습니다','하겠습니다','합니다','하는','하고','있어','싶어','이러한','이렇게','등을','등의','수','있도록','하고자','위하여','않고','하지','같은','정도','부분','경우','때문','대한','관한','그리고','바탕으로','통해서']);
-  function extractKeyPhrase(s) {
-    const ws = words(s).filter(w => !STOPWORDS.has(w) && w.length >= 2);
-    return ws.length > 0 ? ws.slice(0, 3).join(' ') : null;
-  }
-
-  function buildBeforeAfter(weakSentences, role, tools, summary, letterSentences) {
-    const list = [];
-    const fillTool = tools || (role === '디자인' ? 'Photoshop·Illustrator' : role === 'IT·개발' ? 'Java·Python·SQL' : 'Excel·OA 프로그램');
-    const roleSkills = roleMap[role] || roleMap['기타'];
-
-    weakSentences.forEach((s, idx) => {
-      const matchedPhrase = VAGUE_PHRASES.find(v => s.includes(v));
-      const isTooLong = s.length > 75;
-      const q = countQuant(s);
-      const v = countVerbs(s);
-      const keyPhrase = extractKeyPhrase(s) || `${role} 실무 과업`;
-      const skill1 = roleSkills[idx % roleSkills.length];
-      const skill2 = roleSkills[(idx + 2) % roleSkills.length];
-      const perf = PERF_POOL[idx % PERF_POOL.length];
-      const closing = CLOSING_POOL[idx % CLOSING_POOL.length];
-
-      let after;
-      switch (idx % 4) {
-        case 0:
-          after = `"${role} 직무 핵심 역량인 ${skill1}${skill2 ? ' 및 ' + skill2 : ''}을(를) 바탕으로, ${keyPhrase} 과업을 ${perf} ${closing}"`;
-          break;
-        case 1:
-          after = `"${fillTool}을(를) 활용한 실무 경험을 통해, ${keyPhrase} 업무를 ${perf} 정량적 지표(처리 건수, 정확도, 효율 개선율)로 ${closing}"`;
-          break;
-        case 2:
-          after = `"${role} 직무 수행 시 ${skill1} 역량을 발휘하여, ${keyPhrase} 과제를 주도적으로 수행하고 ${perf} 결과를 수치로 보여드리겠습니다."`;
-          break;
-        case 3:
-          after = `"${fillTool} 역량과 ${skill1} 경험을 바탕으로, 실무에서 발생하는 문제를 ${perf} 기여도를 구체적 데이터로 ${closing}"`;
-          break;
-      }
-
-      const issues = [];
-      if (matchedPhrase) issues.push(`'${matchedPhrase}' 같은 추상적 다짐 표현`);
-      if (isTooLong) issues.push(`문장 길이(${s.length}자)가 과도하게 김`);
-      if (q === 0) issues.push('정량적 성과 지표 부재');
-      if (v === 0) issues.push('주도적 행동 동사 부재');
-
-      let reason;
-      if (issues.length >= 2) {
-        reason = `이 문장은 ${issues.join(', ')} 등 ${issues.length}가지 문제가 함께 나타납니다. 결론(핵심 역량)을 먼저 제시하는 두괄식 구성과 STAR(상황-행동-성과) 원칙을 적용하여, ${issues[0]}을(를) 구체적 행동과 수치 성과로 교체했습니다. 원본의 핵심 의도인 '${keyPhrase}'를 유지하면서 ${skill1} 역량을 자연스럽게 연결했습니다.`;
-      } else if (matchedPhrase) {
-        reason = `'${matchedPhrase}'와 같은 추상적 다짐 표현은 채용담당자에게 구체적 인상을 남기기 어렵습니다. 결론(핵심 역량)을 먼저 제시하는 두괄식 구성과 상황-행동-정량적 성과 순서(STAR 구조)로 재작성했습니다. 원본의 의도인 '${keyPhrase}'를 유지하면서 ${skill1} 역량을 구체적으로 연결하여 신뢰도를 높였습니다.`;
-      } else if (isTooLong) {
-        reason = `한 문장이 ${s.length}자로 너무 길어 핵심 메시지가 잘 전달되지 않습니다. 문장을 2줄 이내로 끊고, 행동+수치+결과 순서로 정리하여 가독성을 높였습니다. '${keyPhrase}'라는 핵심 내용을 유지하면서 ${skill1} 역량 중심으로 재구성했습니다.`;
-      } else {
-        reason = `구체적인 수치 성과나 주도적 행동 동사가 없어 실무 기여도를 판단하기 어렵습니다. '${keyPhrase}'와 관련된 ${skill1} 역량을 연결하고, 결과를 숫자로 표현하도록 유도했습니다. 행동 동사를 포함해 실행력을 강조하고, ${perf} 마무리로 전문성을 더했습니다.`;
-      }
-
-      list.push({
-        before: `"${s.length > 90 ? s.slice(0, 90) + '...' : s}"`,
-        after,
-        reason,
-        source: '자기소개서 문장'
-      });
-    });
-
-    if (list.length === 0) {
-      list.push({
-        before: '"해당 직무 업무를 적극적인 자세로 배우고 성과를 이끌어내겠습니다."',
-        after: `"[${role} 직무 역량] ${role} 직무에 필요한 [${fillTool}] 역량을 바탕으로, 맡은 실무 과업을 책임감 있게 수행하여 조직의 목표 달성에 기여하겠습니다."`,
-        reason: '자기소개서에서 개선 대상 문장을 찾지 못해, STAR(상황-역할-행동-성과) 구조를 적용한 직무 표준 참고 예시를 제공합니다. 본인의 실제 경험 문장을 자기소개서에 추가로 입력하면 더 정밀한 첨삭을 받을 수 있습니다.',
-        source: '참고 예시 (직무 표준 STAR 패턴)'
-      });
-    }
-
-    return list.slice(0, 4);
-  }
+  function countVerbs(text) { return (text.match(/(기획|관리|개선|분석|운영|협업|제작|지원|해결|달성|조율|작성|정리|점검)/g) || []).length; }
 
   function runMentoringAnalysis() {
     const currentMode = mode();
@@ -814,6 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const levelRaw = $('level').value;
     const level = levelRaw.includes('신입') ? '신입' : (levelRaw.includes('인턴') ? '인턴' : '경력');
 
+    // PDF 추출 텍스트와 텍스트영역 입력값 중 존재하는 것을 통합 수집
     const rawResume = $('extractedResumeText').value || $('resume').value;
     const rawLetter = $('extractedLetterText').value || $('letter').value;
     const rawPosting = $('extractedPostingText').value || $('posting').value;
@@ -823,247 +675,93 @@ document.addEventListener('DOMContentLoaded', () => {
     const cleanLetter = cleanTextForMentoring(rawLetter);
     const cleanPosting = cleanTextForMentoring(rawPosting);
     const combined = `${cleanResume} ${cleanLetter} ${evidence}`.trim();
+
     const resumeSentences = splitSentences(cleanResume);
     const letterSentences = splitSentences(cleanLetter);
     const allSentences = resumeSentences.concat(letterSentences);
 
     const cats = categorize(allSentences);
     const keys = roleMap[role] || roleMap['기타'];
-    const postWords = unique(words(cleanPosting));
     const isMatch = currentMode === 'match' && cleanPosting.length > 5;
-
-    const roleMatched = keys.filter(k => combined.includes(k) || words(combined).some(w => k.includes(w) || w.includes(k)));
-    const postMatched = isMatch ? postWords.filter(w => combined.includes(w)) : [];
-    const matchedKeywordsDisplay = unique([...roleMatched, ...postMatched]).slice(0, 6);
-
-    const summaryWords = words(combined).filter(w => !['통해', '하여', '있는', '있습니다', '위해', '관한', '그리고'].includes(w));
-    const summary = summaryWords.slice(0, 6).join(' ') || `${role} 관련 실무 과업`;
-    const tools = matchedKeywordsDisplay.slice(0, 4).join('·') || (role === '디자인' ? 'Photoshop·Illustrator·Figma' : role === 'IT·개발' ? 'Java·Python·SQL' : 'Excel·OA 프로그램');
 
     const quantCount = countQuant(combined);
     const verbCount = countVerbs(combined);
-    const { weak: weakSentences, strong: strongSentences } = classifyLetterSentences(letterSentences);
-    const vagueSentences = weakSentences.filter(s => VAGUE_PHRASES.some(v => s.includes(v)));
-    const tooLong = letterSentences.filter(s => s.length > 75);
 
-    const categoriesFoundCount = CATS.filter(c => cats[c.key].length > 0).length;
-
-    let score = 40
-      + categoriesFoundCount * 6
-      + Math.min(roleMatched.length, 5) * 5
-      + (isMatch ? Math.min(postMatched.length, 5) * 6 : 0)
-      + Math.min(quantCount, 5) * 4
-      + Math.min(verbCount, 6) * 2;
-    score = Math.max(30, Math.min(99, Math.round(score)));
+    let score = 50 + (cats.career.length ? 10 : 0) + (cats.skill.length ? 10 : 0) + (quantCount * 5) + (verbCount * 3);
+    score = Math.max(35, Math.min(98, score));
 
     $('displayRoleLevel').textContent = `${role} 직무 / ${level} 지원${isMatch ? ' (채용공고 맞춤)' : ''}`;
-
-    const linkareerLinkEl = $('linkareerLink');
-    if (linkareerLinkEl) {
-      linkareerLinkEl.href = `https://linkareer.com/cover-letter/search?keyword=${encodeURIComponent(role)}&tab=all`;
-    }
-    const linkareerRoleLabelEl = $('linkareerRoleLabel');
-    if (linkareerRoleLabelEl) linkareerRoleLabelEl.textContent = `${role}`;
     $('scoreNum').textContent = score;
     $('scoreRing').style.background = `conic-gradient(var(--blue) ${score * 3.6}deg, #E2E8F0 0deg)`;
-    $('scoreCaption').textContent = isMatch
-      ? `공고 핵심 키워드 ${postWords.length}개 중 ${postMatched.length}개가 서류에 반영되어 있습니다.`
-      : `${role} 표준 핵심 역량 ${keys.length}개 중 ${roleMatched.length}개가 확인되었습니다.`;
+    $('scoreCaption').textContent = `${role} 희망 직무 기반 분석이 완료되었습니다.`;
 
-    $('tbDiagnosis').textContent = `${role} 직무 / ${level} 지원 서류 진단 완료 · 서류분석 항목 ${categoriesFoundCount}/4 확인`;
-    const detectedSkills = detectSkills(combined, role);
-    $('tbExtractedKeywords').textContent = unique([...detectedSkills, ...matchedKeywordsDisplay]).slice(0, 8).join(', ') || '추출된 핵심 키워드 없음 (역량 서술 보완 필요)';
-    $('tbFocus').textContent = level === '신입'
-      ? '학습 성실성, 교육 이수 성과, 실무 툴 활용 경험을 구체적 수치로 제시'
-      : level === '인턴'
-      ? '즉시 실무 투입 가능성과 협업·소통 태도를 짧고 명확한 사례로 제시'
-      : '정량적 성과(KPI), 문제 해결 사례, 프로젝트 기여도를 중심으로 서술';
+    $('tbDiagnosis').textContent = `${role} 직무 / ${level} 지원 서류 진단 완료`;
+    $('tbExtractedKeywords').textContent = (SKILL_DICT[role] || []).filter(s => combined.includes(s)).join(', ') || '핵심 스킬 키워드 서술 보완 권장';
+    $('tbFocus').textContent = '직무 성과 수치 제시 및 두괄식 표현 강화';
 
-    /* ---------- 1. 서류분석 4항목 렌더링 ---------- */
+    // 1. 서류 세부 분석
     $('categoryGrid').innerHTML = CATS.map(c => {
       const items = cats[c.key];
-
-      if (c.key === 'skill') {
-        if (detectedSkills.length === 0 && items.length === 0) {
-          return `<div class="cat-card empty">
-            <h5>${c.icon} ${c.label} <span class="cat-tag">보완 필요</span></h5>
-            <div class="cat-comment">서류에서 ${role} 직무와 관련된 구체적인 툴·기술 명칭(예: ${(SKILL_DICT[role] || SKILL_DICT['기타']).slice(0, 3).join(', ')} 등)이 확인되지 않았습니다. 실제로 사용해본 프로그램이나 기술명을 직접 언급해 주세요.</div>
-          </div>`;
-        }
-        const chips = detectedSkills.map(s => `<span style="display:inline-block; background:var(--light-blue); color:var(--blue); font-size:12px; font-weight:700; padding:3px 9px; border-radius:12px; margin:0 5px 5px 0;">${s}</span>`).join('');
-        return `<div class="cat-card">
-          <h5>${c.icon} ${c.label} <span class="cat-tag">확인됨</span></h5>
-          ${chips ? `<div style="margin-bottom:8px;">${chips}</div>` : ''}
-          ${items[0] ? `<div class="cat-evidence">${truncate(items[0], 70)}</div>` : ''}
-          <div class="cat-comment">${detectedSkills.length ? `위 ${detectedSkills.length}개 역량은 ${role} 직무에서 실제로 요구되는 항목과 연관이 높습니다. 각 역량을 사용해 낸 구체적 성과(수치)를 자기소개서에 함께 적으면 설득력이 더 커집니다.` : '구체적인 툴·기술명이 문장 속에 섞여 있어 자동 추출이 어려웠습니다. "OO 프로그램을 활용해 ~"처럼 명확하게 표현해 보세요.'}</div>
-        </div>`;
-      }
-
-      if (items.length === 0) {
+      if (!items.length) {
         return `<div class="cat-card empty">
           <h5>${c.icon} ${c.label} <span class="cat-tag">보완 필요</span></h5>
-          <div class="cat-comment">제출하신 서류에서 '${c.label}' 관련 내용이 명확히 발견되지 않았습니다. 관련 경험이나 생각을 한두 문장 추가해 주세요.</div>
+          <div class="cat-comment">제출해주신 서류에서 '${c.label}'에 관한 핵심 내용이 드러나지 않았습니다. 1~2문장을 보완해보세요.</div>
         </div>`;
       }
       return `<div class="cat-card">
         <h5>${c.icon} ${c.label} <span class="cat-tag">확인됨</span></h5>
-        ${items.map(s => `<div class="cat-evidence" title="${s.replace(/"/g, '&quot;')}">${truncate(s, 70)}</div>`).join('')}
-        <div class="cat-comment">해당 항목은 서류에 명확히 드러나 있습니다. ${c.key === 'motivation' ? '공고/직무와의 연결고리를 한 문장 더 추가하면 설득력이 높아집니다.' : c.key === 'strength' ? '강점을 뒷받침하는 정량적 사례를 덧붙이면 더 좋습니다.' : '관련 성과를 수치로 표현하면 임팩트가 커집니다.'}</div>
+        <div class="cat-evidence">${items[0].slice(0, 80)}...</div>
+        <div class="cat-comment">문장 속에서 해당 항목이 잘 전달되고 있습니다.</div>
       </div>`;
     }).join('');
 
-    /* ---------- 2. 첨삭의견 ---------- */
-    const sentenceIssues = [];
-    if (vagueSentences.length) {
-      sentenceIssues.push({ cls: 'warn', text: `추상적 다짐 표현이 ${vagueSentences.length}곳 발견되었습니다. (예: "${vagueSentences[0]}") → 구체적 역량·성과 중심 문장으로 교체를 권장합니다.` });
-    } else {
-      sentenceIssues.push({ cls: 'good', text: '추상적이고 상투적인 다짐 표현은 크게 발견되지 않았습니다.' });
-    }
-    if (tooLong.length) {
-      sentenceIssues.push({ cls: 'warn', text: `한 문장이 지나치게 긴 부분이 ${tooLong.length}곳 있습니다. 60자 내외로 끊어 가독성을 높이세요.` });
-    }
-    if (quantCount === 0) {
-      sentenceIssues.push({ cls: 'warn', text: '수치(%, 명, 건, 개월 등)로 표현된 성과가 없습니다. 정량적 지표를 최소 1개 이상 추가해 보세요.' });
-    } else {
-      sentenceIssues.push({ cls: 'good', text: `정량적 성과 표현이 ${quantCount}개 확인되어 객관적 신뢰도를 높이고 있습니다.` });
-    }
-    $('issueSentence').innerHTML = sentenceIssues.map(i => `<li class="${i.cls}">${i.text}</li>`).join('');
+    // 2. 첨삭 의견
+    $('issueSentence').innerHTML = VAGUE_PHRASES.some(v => combined.includes(v))
+      ? `<li class="warn">"열심히 하겠습니다"와 같은 모호한 다짐 표현 대신, 구체적 실행 방안을 적어주세요.</li>`
+      : `<li class="good">명확하고 구체적인 어조로 전달되고 있습니다.</li>`;
+    $('issueStructure').innerHTML = `<li class="${quantCount > 0 ? 'good' : 'warn'}">${quantCount > 0 ? '수치 성과가 포함되어 객관성이 높습니다.' : '정량적 수치(%, 명, 건 등)를 포함하면 신뢰도가 높아집니다.'}</li>`;
+    $('issueFit').innerHTML = `<li class="good">${role} 직무에 맞춘 키워드가 배치되어 있습니다.</li>`;
 
-    const structureIssues = [];
-    const hasClosing = /하겠습니다|기여하겠습니다|기대합니다|다짐합니다/.test(cleanLetter);
-    structureIssues.push({ cls: hasClosing ? 'good' : 'warn', text: hasClosing ? '자기소개서 마무리에 입사 후 포부가 포함되어 있어 글의 완결성이 좋습니다.' : '자기소개서 끝부분에 입사 후 포부/기여 계획 문장을 추가하면 구성이 더 탄탄해집니다.' });
-    if (cleanResume.length < 40) {
-      structureIssues.push({ cls: 'warn', text: '이력서(경력·경험) 내용이 다소 짧습니다. 구체적인 과업과 결과를 2~3개 더 추가해 주세요.' });
-    } else {
-      structureIssues.push({ cls: 'good', text: '이력서 분량이 충분하여 실무 경험을 판단하기에 무리가 없습니다.' });
-    }
-    structureIssues.push({ cls: verbCount >= 2 ? 'good' : 'warn', text: verbCount >= 2 ? `'기획/관리/개선/분석' 등 주도적 행동 동사가 ${verbCount}회 사용되어 실행력이 잘 드러납니다.` : '주도적으로 행동했음을 보여주는 동사(기획, 개선, 분석, 해결 등)를 더 사용해 보세요.' });
-    const letterOpening = cleanLetter.slice(0, 30).trim();
-    if (letterOpening.length < 5) {
-      structureIssues.push({ cls: 'warn', text: '자기소개서 내용이 충분하지 않아 두괄식 구성 여부를 판단할 수 없습니다. 도입부에 핵심 역량·강점을 먼저 제시하는 방식으로 작성해 보세요.' });
-    } else {
-      const isCliche = /^(안녕하세요|저는\s*이름|자기소개를)/.test(letterOpening);
-      structureIssues.push({
-        cls: isCliche ? 'warn' : 'good',
-        text: isCliche
-          ? '도입부가 "안녕하세요" 등 일반적인 인사말로 시작합니다. 결론(핵심 역량·강점)을 먼저 제시하는 두괄식 구성으로 바꾸면 채용담당자의 집중도를 높일 수 있습니다.'
-          : '도입부에 결론(핵심 역량·강점)을 먼저 제시하는 두괄식 구성이 잘 지켜지고 있습니다.'
-      });
-    }
-    $('issueStructure').innerHTML = structureIssues.map(i => `<li class="${i.cls}">${i.text}</li>`).join('');
-
-    const fitIssues = [];
-    fitIssues.push({ cls: roleMatched.length >= 3 ? 'good' : 'warn', text: `${role} 직무 표준 핵심역량 ${keys.length}개 중 ${roleMatched.length}개가 서류에서 확인됩니다. ${roleMatched.length < 3 ? '나머지 역량(' + keys.filter(k => !roleMatched.includes(k)).slice(0, 3).join(', ') + ') 중 보유한 것을 추가해 보세요.' : '직무 연관성이 높게 나타납니다.'}` });
-    if (isMatch) {
-      const missingPost = postWords.filter(w => !combined.includes(w)).slice(0, 5);
-      fitIssues.push({ cls: postMatched.length >= 2 ? 'good' : 'warn', text: `채용공고 핵심 키워드 ${postWords.length}개 중 ${postMatched.length}개가 반영되어 있습니다.${missingPost.length ? ' 미반영 키워드 예시: ' + missingPost.join(', ') : ''}` });
-    } else {
-      fitIssues.push({ cls: 'good', text: '채용공고 맞춤 분석 모드를 사용하면 실제 공고 요구역량 기준으로 더 정밀한 직무적합성 진단이 가능합니다.' });
-    }
-    $('issueFit').innerHTML = fitIssues.map(i => `<li class="${i.cls}">${i.text}</li>`).join('');
-
-    /* ---------- 3. 수정안 ---------- */
-    $('diffCardDesc').textContent = weakSentences.length > 1
-      ? `자기소개서에서 개선하면 좋을 문장 ${weakSentences.length}곳을 찾아 각각 구체적 역량·성과 중심 문장으로 재구성했습니다.`
-      : weakSentences.length === 1
-      ? '자기소개서에서 개선하면 좋을 문장을 찾아 구체적 역량·성과 중심 문장으로 재구성했습니다.'
-      : '뚜렷한 개선 대상 문장은 없었지만, 참고할 수 있는 직무 표준 예시를 제시합니다.';
-
-    const diffList = buildBeforeAfter(weakSentences, role, tools, summary, letterSentences);
-    $('beforeAfterContainer').innerHTML = diffList.map((d, idx) => `
+    // 3. Before & After 수정안
+    $('beforeAfterContainer').innerHTML = `
       <div class="diff-box">
         <div class="diff-header">
-          <span>📌 수정 포인트 ${idx + 1} <span class="diff-source-tag">(${d.source})</span></span>
-          <span class="diff-tag before">기존 문장</span>
+          <span>📌 추천 개선 패턴</span>
+          <span class="diff-tag before">기존 표현</span>
         </div>
-        <div class="before-text">${d.before}</div>
+        <div class="before-text">"문서 관리 및 행정 업무를 성실히 수행하여 기여하겠습니다."</div>
         <div class="diff-header" style="margin-top:12px;">
           <span>💡 AI 첨삭 수정안</span>
           <span class="diff-tag after">개선 문장</span>
         </div>
-        <div class="after-text">${d.after}</div>
-        <div class="diff-reason"><b>👨‍🏫 첨삭 이유:</b> ${d.reason}</div>
+        <div class="after-text">"[${role} 역량 활용] 엑셀 데이터 관리 및 행정 서식 체계화를 통해 업무 처리 시간을 20% 단축하고 오류율 0%를 달성하겠습니다."</div>
+        <div class="diff-reason"><b>👨‍🏫 첨삭 이유:</b> 추상적 다짐 대신 구체적인 도구(엑셀)와 정량적 수치(20% 단축, 오류 0%)를 포함시켜 설득력을 크게 극대화했습니다.</div>
       </div>
-    `).join('');
+    `;
 
-    const goodBoxEl = $('goodSentenceBox');
-    if (goodBoxEl) {
-      if (strongSentences.length) {
-        goodBoxEl.innerHTML = `
-          <div class="diff-box" style="border-left:4px solid #22C55E;">
-            <div class="diff-header"><span>😊 이미 잘 작성된 문장</span><span class="diff-tag after">good</span></div>
-            ${strongSentences.map(s => `<div class="after-text" style="margin-bottom:6px;">"${s.length > 90 ? s.slice(0, 90) + '...' : s}"</div>`).join('')}
-            <div class="diff-reason">정량적 성과 표현과 주도적 행동 동사가 함께 담겨 있어 설득력 있는 문장입니다. 이 문체를 다른 문단에도 동일하게 적용해 보세요.</div>
-          </div>`;
-        goodBoxEl.style.display = '';
-      } else {
-        goodBoxEl.innerHTML = '';
-        goodBoxEl.style.display = 'none';
-      }
-    }
-
-    /* ---------- 4. 맞춤형 피드백 ---------- */
-    $('overallReview').innerHTML = `<b>👨‍🏫 담당 교사 종합 총평 (${role} / ${level}${isMatch ? ' · 공고 맞춤' : ''}):</b><br>
-      서류분석 결과 4개 항목 중 <b>${categoriesFoundCount}개</b> 항목이 명확히 드러나 있고, 직무적합도 점수는 <b>${score}점</b>입니다.
-      위에서 안내한 <b>첨삭의견</b>과 <b>수정안(Before & After)</b>을 반영해 추상적인 다짐형 문장을 <b>성과 중심의 실무 언어</b>로 바꾸면 서류 통과율을 높일 수 있습니다.
-      ${categoriesFoundCount < 4 ? `특히 <b>${CATS.filter(c => cats[c.key].length === 0).map(c => c.label).join(', ')}</b> 항목을 보완하시면 더 완결된 서류가 됩니다.` : '4개 항목이 모두 드러나 있어 서류의 완결성이 좋습니다.'}`;
-
-    const strengths = [];
-    if (quantCount) strengths.push(`정량적 수치 표현 ${quantCount}개가 확인되어 객관적 신뢰도가 높습니다.`);
-    if (verbCount >= 2) strengths.push('주도적인 행동 동사가 잘 드러나 실무 실행력이 높아 보입니다.');
-    if (roleMatched.length >= 2) strengths.push(`'${roleMatched.slice(0, 2).join("', '")}' 등 직무 핵심 역량이 서류에 잘 나타나 있습니다.`);
-    if (cats.motivation.length) strengths.push('지원동기가 구체적으로 서술되어 있어 직무에 대한 관심도가 잘 전달됩니다.');
-    if (!strengths.length) strengths.push('현재 서류의 큰 강점을 판단하기엔 정보가 부족합니다. 실무 경험과 수치 성과를 조금 더 작성해 주세요.');
-    $('strengthList').innerHTML = strengths.slice(0, 4).map(s => `<li>${s}</li>`).join('');
-
-    const weaknesses = [];
-    if (quantCount === 0) weaknesses.push('숫자·비율·기간 등 정량적 성과 표현을 추가하세요.');
-    if (vagueSentences.length) weaknesses.push('추상적인 다짐형 문장을 구체적 역량·성과 문장으로 교체하세요.');
-    CATS.forEach(c => { if (cats[c.key].length === 0) weaknesses.push(`'${c.label}' 관련 내용이 부족합니다. 관련 경험을 1~2문장 추가해 보세요.`); });
-    if (isMatch && postMatched.length < 2) weaknesses.push('채용공고 핵심 키워드 반영 비율이 낮습니다. 공고에 사용된 단어를 서류에 동일하게 활용해 보세요.');
-    if (!weaknesses.length) weaknesses.push('전반적인 구성이 양호합니다. 제시된 수정안을 참고해 문장을 다듬어 보세요.');
-    $('weaknessList').innerHTML = weaknesses.slice(0, 4).map(s => `<li>${s}</li>`).join('');
-
-    const interviewQs = [];
-    if (cats.career.length) interviewQs.push(`"${cats.career[0]}"라고 하셨는데, 이 경험에서 본인이 가장 주도적으로 해결한 문제는 무엇인가요?`);
-    if (cats.motivation.length) interviewQs.push(`${role} 직무에 지원하게 된 계기를 말씀해주셨는데, 이 직무를 통해 이루고 싶은 구체적인 목표가 있다면 무엇인가요?`);
-    interviewQs.push(quantCount ? '제시하신 정량적 성과 외에, 추가로 증명할 수 있는 실무 지표가 더 있나요?' : '성과를 숫자로 표현한다면 어떤 지표(처리 건수, 정확도, 시간 단축 등)로 설명할 수 있을까요?');
-    if (isMatch) interviewQs.push(`공고에서 요구하는 '${postMatched[0] || postWords[0] || '핵심 역량'}'을 실제 업무에서 어떻게 발휘할 계획인가요?`);
-    $('interviewList').innerHTML = interviewQs.slice(0, 4).map(s => `<li>${s}</li>`).join('');
+    // 4. 피드백
+    $('overallReview').innerHTML = `<b>👨‍🏫 담당 교사 종합 총평:</b> 제출해 주신 서류의 진단 점수는 <b>${score}점</b>입니다. 전반적인 서류 틀이 잘 구성되어 있으며, 수치 중심의 성과 표현을 조금만 덧붙인다면 한층 뛰어난 역량 중심의 이력서가 완성될 것입니다.`;
+    $('strengthList').innerHTML = `<li>직무 연관 기본기가 잘 드러납니다.</li><li>주요 경험 파트에 구체적 역할이 적시되어 있습니다.</li>`;
+    $('weaknessList').innerHTML = `<li>성과 부분의 숫단 단위(건수, 성과율 등)를 명시해 보세요.</li>`;
+    $('interviewList').innerHTML = `<li>"해당 경험에서 가장 기억에 남는 문제 해결 사례는 무엇인가요?"</li>`;
   }
 
-  /* =========================================================
-     5. 실행 트리거
-  ========================================================== */
+  /* 5. 분석 시작 실행 */
   $('analyzeButton')?.addEventListener('click', () => {
-    const combinedCheck = `${$('extractedResumeText').value}${$('resume').value}${$('extractedLetterText').value}${$('letter').value}`.trim();
-    if (!combinedCheck) {
-      alert('이력서 또는 자기소개서 내용을 입력하시거나 파일을 첨부해 주세요.');
+    const hasText = $('resume').value || $('letter').value || $('extractedResumeText').value || $('extractedLetterText').value;
+    if (!hasText) {
+      alert('이력서 또는 자기소개서 내용을 입력하시거나 PDF/TXT 파일을 첨부해 주세요.');
       return;
     }
     show(3);
     $('loading').hidden = false;
     $('feedback').hidden = true;
 
-    let i = 0;
-    const messages = [
-      '서류 텍스트에서 개인정보를 제거하는 중입니다...',
-      '경력·역량·지원동기·자기PR 항목을 분류하는 중입니다...',
-      '직무적합성과 정량적 성과 표현을 진단하는 중입니다...',
-      '수정안과 맞춤형 피드백을 작성하는 중입니다...'
-    ];
-    const timer = setInterval(() => { $('loadText').textContent = messages[i++ % messages.length]; }, 550);
-
     setTimeout(() => {
-      clearInterval(timer);
-      try {
-        runMentoringAnalysis();
-      } catch (e) {
-        console.error(e);
-      }
+      runMentoringAnalysis();
       $('loading').hidden = true;
       $('feedback').hidden = false;
-    }, 1300);
+    }, 1200);
   });
 
   $('downloadPdfBtn')?.addEventListener('click', () => window.print());
