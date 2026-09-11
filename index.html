@@ -422,8 +422,8 @@
 
             <!-- 3. 수정안 -->
             <div class="detail-card">
-              <h4>🛠️ 3. 수정안 작성 <span style="font-size:12px; color:var(--gray); font-weight:400;">(STAR 구조 적용 Before & After)</span></h4>
-              <div class="card-desc" id="diffCardDesc">첨삭의견을 반영하여 구체적인 상황, 과업, 실무 행동, 수치 성과(STAR)가 들어간 합격 지원서 문체로 재구성했습니다.</div>
+              <h4>🛠️ 3. 수정안 작성 <span style="font-size:12px; color:var(--gray); font-weight:400;">(Before & After)</span></h4>
+              <div class="card-desc" id="diffCardDesc">첨삭의견을 반영하여 실제 제출 문장을 우수 합격 이력서 문체로 재구성했습니다.</div>
               <div id="beforeAfterContainer"></div>
               <div id="goodSentenceBox" style="margin-top:4px;"></div>
               <div id="linkareerBox" style="margin-top:14px; background:#F8FAFC; border:1px dashed var(--border); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--gray);">
@@ -593,12 +593,12 @@ document.addEventListener('DOMContentLoaded', () => {
     cleaned = cleaned.replace(/(01[016789]|02|0[3-9][0-9])[-.\s]?[0-9]{3,4}[-.\s]?[0-9]{4}/g, '');
     cleaned = cleaned.replace(/\d{6}[-~]\d{7}/g, '');
 
-    // 생년월일 표기 제거
+    // 생년월일 표기(1998.03.15 / 1998-03-15 / 1998년 3월 15일 / 980315 등) 제거
     cleaned = cleaned.replace(/(19|20)\d{2}\s?[.\-\/년]\s?\d{1,2}\s?[.\-\/월]\s?\d{1,2}\s?일?/g, '');
     cleaned = cleaned.replace(/\b(19|20)\d{2}[01]\d[0-3]\d\b/g, '');
     cleaned = cleaned.replace(/생년월일\s*[:：]?\s*[0-9./\-년월일\s]{4,}/g, '');
 
-    // 이름 제거
+    // 이름/성명 라벨 뒤에 오는 실제 이름 값 제거 (예: 이름 : 홍길동)
     cleaned = cleaned.replace(/(이름|성명)\s*[:：]\s*[가-힣]{2,4}/g, '');
     cleaned = cleaned.replace(/(이름|성명)\s+[가-힣]{2,4}(?=\s|$)/g, '');
 
@@ -617,6 +617,8 @@ document.addEventListener('DOMContentLoaded', () => {
       cleaned = cleaned.replace(new RegExp(w, 'gi'), '');
     });
 
+    // 이력서 템플릿 디자인 요소(영문 섹션 라벨)가 텍스트 추출 시 함께 딸려오는 경우 제거
+    // 예: "Strength1", "Career 02", "Skill:" 등 - PDF 템플릿의 디자인용 라벨이 실제 내용과 섞여 추출되는 현상 방지
     const templateNoise = ['strength', 'weakness', 'profile', 'introduce', 'introduction', 'about me', 'career', 'skill', 'contact', 'certificate', 'portfolio', 'motivation', 'vision', 'personality'];
     templateNoise.forEach(w => {
       cleaned = cleaned.replace(new RegExp(`\\b${w}\\s*[:\\-]?\\s*\\d{0,2}\\b`, 'gi'), '');
@@ -626,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =========================================================
-     4. 분석 엔진 : 서류분석(4항목) / 첨삭의견 / STAR 기반 수정안 / 피드백
+     4. 분석 엔진 : 서류분석(4항목) / 첨삭의견 / 수정안 / 피드백
   ========================================================== */
   const roleMap = {
     '사무행정': ['문서관리', '자료분석', '엑셀활용', '일정관리', '행정지원', '조직소통'],
@@ -638,6 +640,8 @@ document.addEventListener('DOMContentLoaded', () => {
     '기타': ['기획지원', '과업관리', '협업역량', '데이터정리', '원활한소통', '문제해결']
   };
 
+  // 4개 이상 서류분석 항목 : 경력/경험, 핵심역량, 지원동기, 자기PR/강점
+  // max: 카드에 노출할 근거 문장 최대 개수 (내용이 너무 길게 나열되지 않도록 제한)
   const CATS = [
     { key: 'career',     label: '경력·주요 경험',   icon: '💼', max: 1, kws: ['근무', '수행', '담당', '업무', '프로젝트', '경력', '인턴', '실습', '수강', '과정', '참여', '운영', '진행', '처리', '관리', '활동'] },
     { key: 'skill',       label: '핵심 역량',        icon: '🛠️', max: 1, kws: ['능력', '역량', '활용', '가능', '숙련', '자격증', '전문성', '스킬', '툴', '프로그램', '기술', '다룰'] },
@@ -645,6 +649,8 @@ document.addEventListener('DOMContentLoaded', () => {
     { key: 'strength',    label: '자기PR·강점',      icon: '🌟', max: 1, kws: ['강점', '장점', '성격', '책임감', '열정', '자신 있', '자부심', '성실', '꼼꼼', '적극적'] }
   ];
 
+  // 핵심역량 카드에서 "실제 직무 툴/기술명"을 구체적으로 짚어주기 위한 사전
+  // (roleMap이 추상적 역량 카테고리라면, SKILL_DICT는 실제 도구·기술 명칭)
   const SKILL_DICT = {
     '사무행정':      ['엑셀', 'Excel', '파워포인트', 'PowerPoint', '워드', '한글', 'ERP', '그룹웨어', '전자결재', '문서작성', '일정관리'],
     '회계·경리':      ['엑셀', 'Excel', '회계프로그램', '더존', 'SAP', 'ERP', '전표처리', '세무', '결산', '자금관리'],
@@ -699,6 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return unique([...found, ...softFound]).slice(0, 8);
   }
 
+  // 자기소개서 문장을 "개선이 필요한 문장(weak)"과 "이미 잘 작성된 문장(strong)"으로 분류
   function classifyLetterSentences(sentences) {
     const weak = [];
     const strong = [];
@@ -720,43 +727,40 @@ document.addEventListener('DOMContentLoaded', () => {
   function countQuant(text) { return (text.match(/\d+[.,]?\d*\s*(%|명|건|회|개월|년|시간|원|개|배)/g) || []).length; }
   function countVerbs(text) { return (text.match(/(기획|관리|개선|분석|운영|협업|제작|지원|해결|달성|조율|작성|정리|점검|구축|단축|향상)/g) || []).length; }
 
-  /* =========================================================
-     ★ [STAR 수정안 핵심 개선] STAR 구조 기반 Before & After 교정 로직
-  ========================================================== */
+  // ※ 아래 STAR(상황-역할-행동-성과)·두괄식 작성 원칙은 링커리어 등 취업 커뮤니티에서
+  //    공통적으로 안내하는 합격 자소서 작성법을 일반화한 기준입니다. 저작권 보호를 위해
+  //    특정 합격 자소서의 문장을 그대로 가져오지 않고, 이 원칙을 자동 첨삭 로직에 반영했습니다.
   function buildBeforeAfter(weakSentences, role, tools, summary, letterSentences) {
     const list = [];
     const fillTool = tools || (role === '디자인' ? 'Photoshop·Illustrator' : role === 'IT·개발' ? 'Java·Python·SQL' : 'Excel·OA 프로그램');
 
+    // 1순위: 자기소개서 문장 중 개선이 필요한 문장을 찾은 만큼 모두 첨삭 (이력서 문장은 절대 사용하지 않음)
     weakSentences.forEach((s) => {
       const matchedPhrase = VAGUE_PHRASES.find(v => s.includes(v));
       const isTooLong = s.length > 75;
-      let reason, starAfter;
-
+      let reason;
       if (matchedPhrase) {
-        reason = `S(상황)·T(과업) 및 구체적 A(행동) 없이 '${matchedPhrase}'와 같은 추상적 다짐으로 마무리되어 설득력이 부족합니다. 두괄식 핵심 결론 제시 후 STAR 구조에 맞춰 행동과 정량적 성과(R)를 정밀 서술해야 합니다.`;
-        starAfter = `[${role} 핵심 역량] [${summary}] 업무 당시, [${fillTool}]을(를) 활용해 데이터 검증 및 일별 점검 루틴을 직접 설계하고 실행(A)했습니다. 그 결과 업무 처리 속도를 20% 단축하고 누락률 0%를 달성(R)하여 조직의 행정 효율성 향상에 기여했습니다.`;
+        reason = `'${matchedPhrase}'와 같은 추상적 다짐 표현보다, 결론(핵심 역량)을 먼저 제시하는 두괄식 구성과 상황-행동-정량적 성과 순서(STAR 구조)로 작성하면 신뢰도가 높아집니다.`;
       } else if (isTooLong) {
-        reason = '문장의 길이가 과도하게 길어 S-T-A-R 요소가 모호해졌습니다. 한 문장 당 하나의 정보(Action, Result)만 명확히 전달되도록 호흡을 다듬었습니다.';
-        starAfter = `[직무 과업 수행] [${summary}] 과정에서 발생한 데이터 정제 이슈를 해결하기 위해 [${fillTool}]을(를) 사용해 표준 가이드라인을 재정립(A)했습니다. 이를 통해 오류율을 기존 대비 15% 이상 감축(R)할 수 있었습니다.`;
+        reason = '한 문장이 너무 길어 핵심이 잘 전달되지 않습니다. 문장을 2줄 이내로 끊고, 행동+수치+결과 순서로 정리하면 가독성이 높아집니다.';
       } else {
-        reason = '주도적 행동 동사(A)와 정량적 성과 지표(R)가 누락되어 구체성이 떨어집니다. 숫자 지표 및 명확한 작업 스킬을 덧붙여 역량을 입증하도록 교정했습니다.';
-        starAfter = `[실무 성과 달성] [${role}] 직무에서 요구되는 [${fillTool}] 스킬을 바탕으로 주요 프로젝트 및 행정 과업을 주도적으로 담당(T)했습니다. 철저한 리스크 점검을 실행(A)하여 목표 대비 100% 이상의 처리율을 달성(R)했습니다.`;
+        reason = '구체적인 수치 성과나 주도적 행동 동사가 없어 실무 기여도를 판단하기 어렵습니다. 결과를 숫자로 표현하고 행동 동사를 포함해 보세요.';
       }
-
       list.push({
         before: `"${s.length > 90 ? s.slice(0, 90) + '...' : s}"`,
-        after: starAfter,
+        after: `"[${role} 직무 강점] ${role} 직무 수행에 필요한 [${fillTool}] 역량을 바탕으로, ${summary ? `[${summary}]` : '담당 과업'}을 정확하게 처리하여 실제 성과(정량 지표)로 증명하겠습니다."`,
         reason,
         source: '자기소개서 문장'
       });
     });
 
+    // 2순위: 자기소개서 내용 자체가 부족한 경우(문장 없음), 직무 표준 패턴 기반 참고 예시 제공
     if (list.length === 0) {
       list.push({
         before: '"해당 직무 업무를 적극적인 자세로 배우고 성과를 이끌어내겠습니다."',
-        after: `[STAR 표준 구조 적용 예시] [${role} 직무 역량] 이전 실무 및 교육과정 수행 시 [${fillTool}] 기반의 과업 관리(S/T)를 전담했습니다. 체계적인 프로세스 개선을 주도(A)하여 데이터 처리 오차를 0%로 유지하고 효율성을 25% 개선(R)한 경험이 있습니다.`,
-        reason: '제출된 자기소개서에서 취약한 문장이 발견되지 않아 STAR(상황-과업-행동-성과) 가이드라인에 맞춘 직무 표준 수정안 표준 예시를 안내해 드립니다.',
-        source: '참고 예시 (STAR 패턴)'
+        after: `"[${role} 직무 역량] ${role} 직무에 필요한 [${fillTool}] 역량을 바탕으로, 맡은 실무 과업을 책임감 있게 수행하여 조직의 목표 달성에 기여하겠습니다."`,
+        reason: '자기소개서에서 개선 대상 문장을 찾지 못해, STAR(상황-역할-행동-성과) 구조를 적용한 직무 표준 참고 예시를 제공합니다. 본인의 실제 경험 문장을 자기소개서에 추가로 입력하면 더 정밀한 첨삭을 받을 수 있습니다.',
+        source: '참고 예시 (직무 표준 STAR 패턴)'
       });
     }
 
@@ -783,6 +787,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const allSentences = resumeSentences.concat(letterSentences);
 
     /* ---------- 서류분석 (4항목) ---------- */
+    // ※ 항목 분류는 이력서+자기소개서 전체를 참고하되, 아래 "수정안(Before&After)"은
+    //    이력서에 남아있을 수 있는 이름·생년월일 등 개인정보 노출을 막기 위해
+    //    자기소개서(letterSentences) 문장만을 대상으로 생성합니다.
     const cats = categorize(allSentences);
     const keys = roleMap[role] || roleMap['기타'];
     const postWords = unique(words(cleanPosting));
@@ -798,6 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const quantCount = countQuant(combined);
     const verbCount = countVerbs(combined);
+    // 수정안 대상 문장은 자기소개서에서만 탐지 (이력서에는 이름·생년월일 등 개인정보가 남아있을 수 있음)
     const { weak: weakSentences, strong: strongSentences } = classifyLetterSentences(letterSentences);
     const vagueSentences = weakSentences.filter(s => VAGUE_PHRASES.some(v => s.includes(v)));
     const tooLong = letterSentences.filter(s => s.length > 75);
@@ -815,6 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     $('displayRoleLevel').textContent = `${role} 직무 / ${level} 지원${isMatch ? ' (채용공고 맞춤)' : ''}`;
 
+    // 직무별 링커리어 합격 자소서 검색 링크 (실제 자소서 원문을 가져오지 않고, 링크만 안내)
     const linkareerLinkEl = $('linkareerLink');
     if (linkareerLinkEl) {
       linkareerLinkEl.href = `https://linkareer.com/cover-letter/search?keyword=${encodeURIComponent(role)}&tab=all`;
@@ -840,6 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $('categoryGrid').innerHTML = CATS.map(c => {
       const items = cats[c.key];
 
+      // 핵심역량 카드는 실제 직무 툴/기술명을 칩 형태로 우선 제시하고,
+      // 근거 문장은 보조적으로 짧게만 붙인다.
       if (c.key === 'skill') {
         if (detectedSkills.length === 0 && items.length === 0) {
           return `<div class="cat-card empty">
@@ -919,12 +930,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     $('issueFit').innerHTML = fitIssues.map(i => `<li class="${i.cls}">${i.text}</li>`).join('');
 
-    /* ---------- 3. 수정안 (STAR 방식 적용) ---------- */
+    /* ---------- 3. 수정안 ---------- */
     $('diffCardDesc').textContent = weakSentences.length > 1
-      ? `자기소개서에서 개선하면 좋을 문장 ${weakSentences.length}곳을 찾아 STAR(상황-과업-행동-성과) 구성을 갖춘 실무형 문장으로 재구성했습니다.`
+      ? `자기소개서에서 개선하면 좋을 문장 ${weakSentences.length}곳을 찾아 각각 구체적 역량·성과 중심 문장으로 재구성했습니다.`
       : weakSentences.length === 1
-      ? '자기소개서에서 개선하면 좋을 문장을 찾아 STAR(상황-과업-행동-성과) 구성을 갖춘 실무형 문장으로 재구성했습니다.'
-      : '뚜렷한 개선 대상 문장은 없었지만, 참고할 수 있는 STAR 직무 표준 예시를 제시합니다.';
+      ? '자기소개서에서 개선하면 좋을 문장을 찾아 구체적 역량·성과 중심 문장으로 재구성했습니다.'
+      : '뚜렷한 개선 대상 문장은 없었지만, 참고할 수 있는 직무 표준 예시를 제시합니다.';
 
     const diffList = buildBeforeAfter(weakSentences, role, tools, summary, letterSentences);
     $('beforeAfterContainer').innerHTML = diffList.map((d, idx) => `
@@ -935,14 +946,15 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="before-text">${d.before}</div>
         <div class="diff-header" style="margin-top:12px;">
-          <span>💡 STAR AI 첨삭 수정안</span>
-          <span class="diff-tag after">개선 문장 (STAR 적용)</span>
+          <span>💡 AI 첨삭 수정안</span>
+          <span class="diff-tag after">개선 문장</span>
         </div>
         <div class="after-text">${d.after}</div>
         <div class="diff-reason"><b>👨‍🏫 첨삭 이유:</b> ${d.reason}</div>
       </div>
     `).join('');
 
+    // 잘 작성된 문장은 그대로 칭찬하며 보여준다 (정량 성과 + 행동 동사가 함께 있는 문장)
     const goodBoxEl = $('goodSentenceBox');
     if (goodBoxEl) {
       if (strongSentences.length) {
@@ -950,7 +962,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="diff-box" style="border-left:4px solid #22C55E;">
             <div class="diff-header"><span>😊 이미 잘 작성된 문장</span><span class="diff-tag after">good</span></div>
             ${strongSentences.map(s => `<div class="after-text" style="margin-bottom:6px;">"${s.length > 90 ? s.slice(0, 90) + '...' : s}"</div>`).join('')}
-            <div class="diff-reason">정량적 성과 표현과 주도적 행동 동사가 함께 담겨 있어 STAR 구성요소가 잘 갖춰진 모범 문장입니다.</div>
+            <div class="diff-reason">정량적 성과 표현과 주도적 행동 동사가 함께 담겨 있어 설득력 있는 문장입니다. 이 문체를 다른 문단에도 동일하게 적용해 보세요.</div>
           </div>`;
         goodBoxEl.style.display = '';
       } else {
@@ -962,7 +974,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---------- 4. 맞춤형 피드백 ---------- */
     $('overallReview').innerHTML = `<b>👨‍🏫 담당 교사 종합 총평 (${role} / ${level}${isMatch ? ' · 공고 맞춤' : ''}):</b><br>
       서류분석 결과 4개 항목 중 <b>${categoriesFoundCount}개</b> 항목이 명확히 드러나 있고, 직무적합도 점수는 <b>${score}점</b>입니다.
-      위에서 안내한 <b>첨삭의견</b>과 <b>STAR 수정안(Before & After)</b>을 반영해 추상적인 다짐형 문장을 <b>성과 중심의 실무 언어</b>로 바꾸면 서류 통과율을 높일 수 있습니다.
+      위에서 안내한 <b>첨삭의견</b>과 <b>수정안(Before & After)</b>을 반영해 추상적인 다짐형 문장을 <b>성과 중심의 실무 언어</b>로 바꾸면 서류 통과율을 높일 수 있습니다.
       ${categoriesFoundCount < 4 ? `특히 <b>${CATS.filter(c => cats[c.key].length === 0).map(c => c.label).join(', ')}</b> 항목을 보완하시면 더 완결된 서류가 됩니다.` : '4개 항목이 모두 드러나 있어 서류의 완결성이 좋습니다.'}`;
 
     const strengths = [];
@@ -975,7 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const weaknesses = [];
     if (quantCount === 0) weaknesses.push('숫자·비율·기간 등 정량적 성과 표현을 추가하세요.');
-    if (vagueSentences.length) weaknesses.push('추상적인 다짐형 문장을 구체적 STAR 문장으로 교체하세요.');
+    if (vagueSentences.length) weaknesses.push('추상적인 다짐형 문장을 구체적 역량·성과 문장으로 교체하세요.');
     CATS.forEach(c => { if (cats[c.key].length === 0) weaknesses.push(`'${c.label}' 관련 내용이 부족합니다. 관련 경험을 1~2문장 추가해 보세요.`); });
     if (isMatch && postMatched.length < 2) weaknesses.push('채용공고 핵심 키워드 반영 비율이 낮습니다. 공고에 사용된 단어를 서류에 동일하게 활용해 보세요.');
     if (!weaknesses.length) weaknesses.push('전반적인 구성이 양호합니다. 제시된 수정안을 참고해 문장을 다듬어 보세요.');
@@ -1007,7 +1019,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '서류 텍스트에서 개인정보를 제거하는 중입니다...',
       '경력·역량·지원동기·자기PR 항목을 분류하는 중입니다...',
       '직무적합성과 정량적 성과 표현을 진단하는 중입니다...',
-      'STAR 구조 적용 수정안과 맞춤형 피드백을 작성하는 중입니다...'
+      '수정안과 맞춤형 피드백을 작성하는 중입니다...'
     ];
     const timer = setInterval(() => { $('loadText').textContent = messages[i++ % messages.length]; }, 550);
 
