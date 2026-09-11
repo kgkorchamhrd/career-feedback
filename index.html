@@ -730,42 +730,71 @@ document.addEventListener('DOMContentLoaded', () => {
   // ※ 아래 STAR(상황-역할-행동-성과)·두괄식 작성 원칙은 링커리어 등 취업 커뮤니티에서
   //    공통적으로 안내하는 합격 자소서 작성법을 일반화한 기준입니다. 저작권 보호를 위해
   //    특정 합격 자소서의 문장을 그대로 가져오지 않고, 이 원칙을 자동 첨삭 로직에 반영했습니다.
-  function buildBeforeAfter(weakSentences, role, tools, summary, letterSentences) {
-    const list = [];
-    const fillTool = tools || (role === '디자인' ? 'Photoshop·Illustrator' : role === 'IT·개발' ? 'Java·Python·SQL' : 'Excel·OA 프로그램');
+function buildBeforeAfter(weakSentences, role, tools, summary, letterSentences) {
+  const list = [];
+  const fillTool = tools || (role === '디자인' ? 'Photoshop·Illustrator' : role === 'IT·개발' ? 'Java·Python·SQL' : 'Excel·OA 프로그램');
 
-    // 1순위: 자기소개서 문장 중 개선이 필요한 문장을 찾은 만큼 모두 첨삭 (이력서 문장은 절대 사용하지 않음)
-    weakSentences.forEach((s) => {
-      const matchedPhrase = VAGUE_PHRASES.find(v => s.includes(v));
-      const isTooLong = s.length > 75;
-      let reason;
-      if (matchedPhrase) {
-        reason = `'${matchedPhrase}'와 같은 추상적 다짐 표현보다, 결론(핵심 역량)을 먼저 제시하는 두괄식 구성과 상황-행동-정량적 성과 순서(STAR 구조)로 작성하면 신뢰도가 높아집니다.`;
-      } else if (isTooLong) {
-        reason = '한 문장이 너무 길어 핵심이 잘 전달되지 않습니다. 문장을 2줄 이내로 끊고, 행동+수치+결과 순서로 정리하면 가독성이 높아집니다.';
-      } else {
-        reason = '구체적인 수치 성과나 주도적 행동 동사가 없어 실무 기여도를 판단하기 어렵습니다. 결과를 숫자로 표현하고 행동 동사를 포함해 보세요.';
-      }
-      list.push({
-        before: `"${s.length > 90 ? s.slice(0, 90) + '...' : s}"`,
-        after: `"[${role} 직무 강점] ${role} 직무 수행에 필요한 [${fillTool}] 역량을 바탕으로, ${summary ? `[${summary}]` : '담당 과업'}을 정확하게 처리하여 실제 성과(정량 지표)로 증명하겠습니다."`,
-        reason,
-        source: '자기소개서 문장'
-      });
+  // 문장별 개선 유형을 다변화하기 위한 패턴 정의
+  const patterns = [
+    {
+      // 패턴 1: 두괄식 & 역량 정의형
+      getAfter: (s) => `"[${role} 핵심 역량] ${fillTool} 활용 능력을 바탕으로 ${summary || '기본 행정 및 실무 과업'}을 정확하게 처리하여 업무 프로세스 효율을 극대화하겠습니다."`,
+      getReason: (matched) => matched 
+        ? `'${matched}'와 같은 추상적인 다짐보다, 직무에 필요한 핵심 툴/기술 역량을 두괄식으로 먼저 제시하는 것이 검증에 유리합니다.`
+        : '문장 첫 머리에 본인의 핵심 역량을 결론부터 제시하는 두괄식 구성으로 개편하여 전달력을 높였습니다.'
+    },
+    {
+      // 패턴 2: 정량적 성과 & 지표 강조형
+      getAfter: (s) => `"담당 과업 수행 시 데이터 검증을 표준화하여 오류율 0% 달성 및 실무 처리 시간을 기존 대비 15% 이상 단축한 경험이 있습니다."`,
+      getReason: () => '구체적인 정량적 수치(%, 건수, 기간 등)와 목표 성과를 명시하여 업무 실행력과 객관적 신뢰도를 보완했습니다.'
+    },
+    {
+      // 패턴 3: 행동 동사 & 실행력 중심형
+      getAfter: (s) => `"${role} 실무 과정에서 발생할 수 있는 변수를 사전에 점검하고, 체계적인 문서 정리 및 협업 프로세스를 적극적으로 주도하겠습니다."`,
+      getReason: () => '수동적인 표현 대신 \'점검하고\', \'주도하겠습니다\' 등 능동적·주도적 행동 동사를 배치하여 성과 창출 가능성을 강조했습니다.'
+    },
+    {
+      // 패턴 4: 문장 구조 가독성 개선형
+      getAfter: (s) => `"${role} 직무 요구사항을 완벽히 숙지하겠습니다. 철저한 원칙 준수와 세심한 업무 점검을 통해 조직의 안정적 운영에 기여하겠습니다."`,
+      getReason: () => '복잡하거나 길어진 문장을 호흡이 짧은 2개의 명확한 문장으로 분리하여 가독성을 향상시켰습니다.'
+    }
+  ];
+
+  // 1순위: 제출된 자기소개서 문장 중 개선 대상을 순회하며 서로 다른 패턴 적용
+  weakSentences.forEach((s, idx) => {
+    const matchedPhrase = VAGUE_PHRASES.find(v => s.includes(v));
+    const pattern = patterns[idx % patterns.length]; // 4개 유형 순환 적용
+
+    list.push({
+      before: `"${s.length > 90 ? s.slice(0, 90) + '...' : s}"`,
+      after: pattern.getAfter(s),
+      reason: pattern.getReason(matchedPhrase),
+      source: '자기소개서 문장'
     });
+  });
 
-    // 2순위: 자기소개서 내용 자체가 부족한 경우(문장 없음), 직무 표준 패턴 기반 참고 예시 제공
-    if (list.length === 0) {
+  // 2순위: 자기소개서 내용이 부족하여 개선 대상 문장이 적을 경우 다변화된 표준 예시로 채움
+  if (list.length < 4) {
+    const defaultBefores = [
+      '"해당 직무 업무를 적극적인 자세로 배우고 성과를 이끌어내겠습니다."',
+      '"어떤 일이든 최선을 다해 성실하게 임하도록 하겠습니다."',
+      '"관련 경험을 바탕으로 회사에 빠르게 적응하여 보탬이 되겠습니다."',
+      '"꼼꼼한 성격으로 맡은 업무에 책임감을 가지고 일하겠습니다."'
+    ];
+
+    for (let i = list.length; i < 4; i++) {
+      const pattern = patterns[i % patterns.length];
       list.push({
-        before: '"해당 직무 업무를 적극적인 자세로 배우고 성과를 이끌어내겠습니다."',
-        after: `"[${role} 직무 역량] ${role} 직무에 필요한 [${fillTool}] 역량을 바탕으로, 맡은 실무 과업을 책임감 있게 수행하여 조직의 목표 달성에 기여하겠습니다."`,
-        reason: '자기소개서에서 개선 대상 문장을 찾지 못해, STAR(상황-역할-행동-성과) 구조를 적용한 직무 표준 참고 예시를 제공합니다. 본인의 실제 경험 문장을 자기소개서에 추가로 입력하면 더 정밀한 첨삭을 받을 수 있습니다.',
-        source: '참고 예시 (직무 표준 STAR 패턴)'
+        before: defaultBefores[i],
+        after: pattern.getAfter(''),
+        reason: pattern.getReason(null) + ' (참고용 표준 STAR 예시)',
+        source: '참고 예시 (직무 표준 패턴)'
       });
     }
-
-    return list.slice(0, 4);
   }
+
+  return list.slice(0, 4);
+}
 
   function runMentoringAnalysis() {
     const currentMode = mode();
