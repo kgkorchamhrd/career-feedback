@@ -429,7 +429,7 @@
               <div id="linkareerBox" style="margin-top:14px; background:#F8FAFC; border:1px dashed var(--border); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--gray);">
                 📚 위 수정안은 STAR(상황-역할-행동-성과)·두괄식 구성 등 취업 커뮤니티가 공통으로 안내하는 합격 자소서 작성 원칙을 반영했습니다. 실제 합격자 자소서 원문은 저작권 보호 대상이라 이 도구에 그대로 옮겨오지 않으며, 더 많은 예시가 필요하면 아래에서 직접 확인해 보세요.
                 <div style="margin-top:8px;">
-                  <a id="linkareerLink" href="https://linkareer.com/cover-letter/search?tab=all" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; background:var(--white); border:1px solid var(--border); border-radius:6px; padding:7px 12px; font-weight:700; color:var(--navy); font-size:12.5px;">🔗 링커리어에서 <span id="linkareerRoleLabel">해당 직무</span> 합격 자소서 더 보기</a>
+                  <a id="linkareerLink" href="https://linkareer.com/cover-letter/search?tab=all" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; background:var(--white); border:1px solid var(--border); border-radius:6px; font-weight:700; color:var(--navy); font-size:12.5px;">🔗 링커리어에서 <span id="linkareerRoleLabel">해당 직무</span> 합격 자소서 더 보기</a>
                 </div>
               </div>
             </div>
@@ -593,12 +593,10 @@ document.addEventListener('DOMContentLoaded', () => {
     cleaned = cleaned.replace(/(01[016789]|02|0[3-9][0-9])[-.\s]?[0-9]{3,4}[-.\s]?[0-9]{4}/g, '');
     cleaned = cleaned.replace(/\d{6}[-~]\d{7}/g, '');
 
-    // 생년월일 표기(1998.03.15 / 1998-03-15 / 1998년 3월 15일 / 980315 등) 제거
     cleaned = cleaned.replace(/(19|20)\d{2}\s?[.\-\/년]\s?\d{1,2}\s?[.\-\/월]\s?\d{1,2}\s?일?/g, '');
     cleaned = cleaned.replace(/\b(19|20)\d{2}[01]\d[0-3]\d\b/g, '');
     cleaned = cleaned.replace(/생년월일\s*[:：]?\s*[0-9./\-년월일\s]{4,}/g, '');
 
-    // 이름/성명 라벨 뒤에 오는 실제 이름 값 제거 (예: 이름 : 홍길동)
     cleaned = cleaned.replace(/(이름|성명)\s*[:：]\s*[가-힣]{2,4}/g, '');
     cleaned = cleaned.replace(/(이름|성명)\s+[가-힣]{2,4}(?=\s|$)/g, '');
 
@@ -617,7 +615,6 @@ document.addEventListener('DOMContentLoaded', () => {
       cleaned = cleaned.replace(new RegExp(w, 'gi'), '');
     });
 
-    // 이력서 템플릿 디자인 요소(영문 섹션 라벨)가 텍스트 추출 시 함께 딸려오는 경우 제거
     const templateNoise = ['strength', 'weakness', 'profile', 'introduce', 'introduction', 'about me', 'career', 'skill', 'contact', 'certificate', 'portfolio', 'motivation', 'vision', 'personality'];
     templateNoise.forEach(w => {
       cleaned = cleaned.replace(new RegExp(`\\b${w}\\s*[:\\-]?\\s*\\d{0,2}\\b`, 'gi'), '');
@@ -721,47 +718,91 @@ document.addEventListener('DOMContentLoaded', () => {
   function countQuant(text) { return (text.match(/\d+[.,]?\d*\s*(%|명|건|회|개월|년|시간|원|개|배)/g) || []).length; }
   function countVerbs(text) { return (text.match(/(기획|관리|개선|분석|운영|협업|제작|지원|해결|달성|조율|작성|정리|점검|구축|단축|향상)/g) || []).length; }
 
-  // [수정 포인트 1] 각 원문 문장의 유형에 맞게 개별화된 수정안 생성 로직
+  /* =========================================================
+     [수정 핵심] 각 포인트별 고유한 개선 문장 및 첨삭 이유 생성
+  ========================================================== */
   function buildBeforeAfter(weakSentences, role, tools, summary, letterSentences) {
     const list = [];
     const fillTool = tools || (role === '디자인' ? 'Photoshop·Illustrator' : role === 'IT·개발' ? 'Java·Python·SQL' : 'Excel·OA 프로그램');
 
-    weakSentences.forEach((s) => {
-      const matchedPhrase = VAGUE_PHRASES.find(v => s.includes(v));
-      const isTooLong = s.length > 75;
-      let reason, afterText;
+    // 문장별 개선 패턴 라이브러리 (순번 및 성격별 다양화)
+    const templates = [
+      // 패턴 1: 지원동기 / 기여 목적
+      {
+        check: (s) => s.includes('지원') || s.includes('기여') || s.includes('목적') || s.includes('입사'),
+        reason: '단순히 "열심히 하겠다"는 다짐보다, 직무 전문 툴을 활용하여 조직에 구체적으로 어떤 기여를 할 것인지 두괄식 목표로 밝히는 것이 바람직합니다.',
+        after: (s) => `"[${role} 실무 기여] ${fillTool} 역량을 바탕으로 업무 데이터의 정확도를 높이고 프로세스 효율성을 15% 이상 향상시키겠습니다."`
+      },
+      // 패턴 2: 태도 / 성실성 / 책임감
+      {
+        check: (s) => s.includes('성실') || s.includes('책임') || s.includes('태도') || s.includes('노력') || s.includes('확인'),
+        reason: '성실함이나 꼼꼼함 같은 태도적 강점은 추상적 언어 대신, 실무 중 발생할 수 있는 오류 방지나 품질 관리 행위로 구체화해야 신뢰를 줍니다.',
+        after: (s) => `"[품질 검증 및 정확성] 철저한 사전 점검 프로세스와 ${fillTool} 검증 기능을 적용하여 휴먼 에러를 미연에 방지하고 업무 완수율 100%를 달성하겠습니다."`
+      },
+      // 패턴 3: 경험 / 실무 과업
+      {
+        check: (s) => s.includes('경험') || s.includes('수행') || s.includes('관리') || s.includes('작성') || s.includes('처리'),
+        reason: '단순한 업무 나열이나 포부 전달에 그치지 않고, 행동 주체(본인)의 적극적 실행과 그로 인한 수치적·기능적 결과를 명확히 드러내야 합니다.',
+        after: (s) => `"[주도적 과업 수행] ${summary ? summary : '주요 실무 과업'} 수행 시 ${fillTool}을(를) 활용해 관련 서류 단축 및 데이터 정합성을 확보했습니다."`
+      },
+      // 패턴 4: 긴 문장 분리 또는 기타 일반 다짐 문장
+      {
+        check: (s) => s.length > 70,
+        reason: '문장의 호흡이 너무 길어 핵심 전달력이 떨어집니다. 주어-목적어-동사 관계를 단순화하고 결론 중심으로 문장을 이분화하는 것이 좋습니다.',
+        after: (s) => `"[두괄식 핵심 전달] ${s.slice(0, Math.floor(s.length / 2))}... 등 핵심 과업을 차질 없이 이수하여 실무 역량을 입증했습니다."`
+      }
+    ];
 
-      if (matchedPhrase) {
-        reason = `'${matchedPhrase}'와 같은 추상적 다짐 표현보다, 결론(핵심 역량)을 먼저 제시하는 두괄식 구성과 상황-행동-정량적 성과 순서(STAR 구조)로 작성하면 신뢰도가 높아집니다.`;
-        if (s.includes('지원') || s.includes('기여')) {
-          afterText = `"[${role} 지원동기] ${fillTool} 역량을 바탕으로 업무 효율을 향상시키고 조직의 목표 달성에 기여하겠습니다."`;
-        } else if (s.includes('성실') || s.includes('책임') || s.includes('태도')) {
-          afterText = `"[직무 태도 및 강점] 철저한 사전 점검과 ${fillTool} 활용 능력으로 업무 정확도를 제고하겠습니다."`;
-        } else {
-          afterText = `"[${role} 실무 기여] ${fillTool}을(를) 활용해 ${summary ? summary : '핵심 과업'}을 정밀하게 수행하고 성과 창출에 앞장서겠습니다."`;
-        }
-      } else if (isTooLong) {
-        reason = '한 문장이 너무 길어 핵심이 잘 전달되지 않습니다. 문장을 2줄 이내로 끊고, 행동+수치+결과 순서로 정리하면 가독성이 높아집니다.';
-        const half = Math.floor(s.length / 2);
-        afterText = `"[두괄식 문장 분리] ${s.slice(0, half)}... 이에 따라 실무 프로세스를 효율화하였습니다."`;
+    // 백업용 고유 대체 패턴 (문장 유형 매칭이 안 될 경우 4개의 다른 안 출력)
+    const fallbackTemplates = [
+      {
+        reason: '추상적인 다짐 표현 대신 본인이 보유한 직무 툴과 이를 통한 기여 목표를 두괄식으로 제시했습니다.',
+        after: `"[${role} 실무 기여] ${fillTool} 활용 능력을 기반으로 업무 프로세스를 체계화하여 팀 목표 달성에 기여하겠습니다."`
+      },
+      {
+        reason: '태도에 대한 주관적 서술을 지양하고 업무 정확성 및 품질 관리 실행 방안 중심으로 문장을 보완했습니다.',
+        after: `"[데이터 정합성 확보] 표준화된 양식 작성과 사전 검증 절차를 통해 작성 오류 발생률을 최소화하겠습니다."`
+      },
+      {
+        reason: '성과 지표가 드러나지 않은 표현을 주도적 행동 동사와 구체적 성과 수치 중심 문장으로 재구성했습니다.',
+        after: `"[성과 중심 과업 관리] ${fillTool}을(를) 정밀 활용하여 일일 과업 처리 속도를 개선하고 작업 효율성을 제고했습니다."`
+      },
+      {
+        reason: '입사 후 구체적인 포부가 부재한 문장을 실무 전문성 강화 중심의 정량적 발전 목표로 변경했습니다.',
+        after: `"[직무 전문성 강화] 입사 후 직무 관련 보수 교육을 꾸준히 이수하고 최신 실무 가이드를 준수하여 업무 완수율 100%를 유지하겠습니다."`
+      }
+    ];
+
+    weakSentences.forEach((s, idx) => {
+      let matched = templates.find(t => t.check(s));
+      let afterText = '';
+      let reasonText = '';
+
+      if (matched) {
+        afterText = matched.after(s);
+        reasonText = matched.reason;
       } else {
-        reason = '구체적인 수치 성과나 주도적 행동 동사가 없어 실무 기여도를 판단하기 어렵습니다. 결과를 숫자로 표현하고 행동 동사를 포함해 보세요.';
-        afterText = `"[성과 중심 재구성] ${fillTool}을(를) 활용하여 과업 처리 속도를 개선하고 일별 관리 정확도 100%를 달성했습니다."`;
+        const fb = fallbackTemplates[idx % fallbackTemplates.length];
+        afterText = fb.after;
+        reasonText = fb.reason;
       }
 
       list.push({
         before: `"${s.length > 90 ? s.slice(0, 90) + '...' : s}"`,
         after: afterText,
-        reason,
+        reason: reasonText,
         source: '자기소개서 문장'
       });
     });
 
-    if (list.length === 0) {
+    // 부족한 개수 채우기 (최대 4개)
+    while (list.length < Math.min(4, Math.max(weakSentences.length, 1))) {
+      const idx = list.length;
+      const fb = fallbackTemplates[idx % fallbackTemplates.length];
       list.push({
-        before: '"해당 직무 업무를 적극적인 자세로 배우고 성과를 이끌어내겠습니다."',
-        after: `"[${role} 직무 역량] ${role} 직무에 필요한 [${fillTool}] 역량을 바탕으로, 맡은 실무 과업을 책임감 있게 수행하여 조직의 목표 달성에 기여하겠습니다."`,
-        reason: '자기소개서에서 개선 대상 문장을 찾지 못해, STAR(상황-역할-행동-성과) 구조를 적용한 직무 표준 참고 예시를 제공합니다.',
+        before: idx === 0 ? '"해당 직무 업무를 적극적인 자세로 배우고 성과를 이끌어내겠습니다."' : '"최선을 다해 최상의 성과를 내도록 열심히 노력하겠습니다."',
+        after: fb.after,
+        reason: fb.reason,
         source: '참고 예시 (직무 표준 STAR 패턴)'
       });
     }
@@ -986,7 +1027,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!weaknesses.length) weaknesses.push('전반적인 구성이 양호합니다. 제시된 수정안을 참고해 문장을 다듬어 보세요.');
     $('weaknessList').innerHTML = weaknesses.slice(0, 4).map(s => `<li>${s}</li>`).join('');
 
-    /* [수정 포인트 2] 첫 번째 면접 질문 길이를 짧고 간결하게 단축 */
     const interviewQs = [];
     if (cats.career.length) {
       interviewQs.push(`주요 경험 및 과업 중, 본인이 가장 주도적으로 문제 해결을 이끌어낸 사례는 무엇인가요?`);
