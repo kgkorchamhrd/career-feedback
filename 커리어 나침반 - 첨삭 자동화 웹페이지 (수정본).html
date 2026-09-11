@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* =========================================================
-     3. 개인정보 정제
+     3. 개인정보 정제 (오류 수정 완료)
   ========================================================== */
   function cleanTextForMentoring(text) {
     if (!text) return '';
@@ -593,12 +593,12 @@ document.addEventListener('DOMContentLoaded', () => {
     cleaned = cleaned.replace(/(01[016789]|02|0[3-9][0-9])[-.\s]?[0-9]{3,4}[-.\s]?[0-9]{4}/g, '');
     cleaned = cleaned.replace(/\d{6}[-~]\d{7}/g, '');
 
-    // 생년월일 표기(1998.03.15 / 1998-03-15 / 1998년 3월 15일 / 980315 등) 제거
+    // 생년월일 표기 제거
     cleaned = cleaned.replace(/(19|20)\d{2}\s?[.\-\/년]\s?\d{1,2}\s?[.\-\/월]\s?\d{1,2}\s?일?/g, '');
     cleaned = cleaned.replace(/\b(19|20)\d{2}[01]\d[0-3]\d\b/g, '');
-    cleaned = cleaned.replace(/생년월일\s*[:：]?\s*[0-9./\-년월일\s]{4,}/g, '');
+    cleaned = cleaned.replace(/생년월일\s*[:：]?\s*[0-9.\/\-년월일\s]{4,}/g, '');
 
-    // 이름/성명 라벨 뒤에 오는 실제 이름 값 제거 (예: 이름 : 홍길동)
+    // 이름 제거
     cleaned = cleaned.replace(/(이름|성명)\s*[:：]\s*[가-힣]{2,4}/g, '');
     cleaned = cleaned.replace(/(이름|성명)\s+[가-힣]{2,4}(?=\s|$)/g, '');
 
@@ -617,8 +617,6 @@ document.addEventListener('DOMContentLoaded', () => {
       cleaned = cleaned.replace(new RegExp(w, 'gi'), '');
     });
 
-    // 이력서 템플릿 디자인 요소(영문 섹션 라벨)가 텍스트 추출 시 함께 딸려오는 경우 제거
-    // 예: "Strength1", "Career 02", "Skill:" 등 - PDF 템플릿의 디자인용 라벨이 실제 내용과 섞여 추출되는 현상 방지
     const templateNoise = ['strength', 'weakness', 'profile', 'introduce', 'introduction', 'about me', 'career', 'skill', 'contact', 'certificate', 'portfolio', 'motivation', 'vision', 'personality'];
     templateNoise.forEach(w => {
       cleaned = cleaned.replace(new RegExp(`\\b${w}\\s*[:\\-]?\\s*\\d{0,2}\\b`, 'gi'), '');
@@ -628,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =========================================================
-     4. 분석 엔진 : 서류분석(4항목) / 첨삭의견 / 수정안 / 피드백
+     4. 분석 엔진
   ========================================================== */
   const roleMap = {
     '사무행정': ['문서관리', '자료분석', '엑셀활용', '일정관리', '행정지원', '조직소통'],
@@ -640,8 +638,6 @@ document.addEventListener('DOMContentLoaded', () => {
     '기타': ['기획지원', '과업관리', '협업역량', '데이터정리', '원활한소통', '문제해결']
   };
 
-  // 4개 이상 서류분석 항목 : 경력/경험, 핵심역량, 지원동기, 자기PR/강점
-  // max: 카드에 노출할 근거 문장 최대 개수 (내용이 너무 길게 나열되지 않도록 제한)
   const CATS = [
     { key: 'career',     label: '경력·주요 경험',   icon: '💼', max: 1, kws: ['근무', '수행', '담당', '업무', '프로젝트', '경력', '인턴', '실습', '수강', '과정', '참여', '운영', '진행', '처리', '관리', '활동'] },
     { key: 'skill',       label: '핵심 역량',        icon: '🛠️', max: 1, kws: ['능력', '역량', '활용', '가능', '숙련', '자격증', '전문성', '스킬', '툴', '프로그램', '기술', '다룰'] },
@@ -649,8 +645,6 @@ document.addEventListener('DOMContentLoaded', () => {
     { key: 'strength',    label: '자기PR·강점',      icon: '🌟', max: 1, kws: ['강점', '장점', '성격', '책임감', '열정', '자신 있', '자부심', '성실', '꼼꼼', '적극적'] }
   ];
 
-  // 핵심역량 카드에서 "실제 직무 툴/기술명"을 구체적으로 짚어주기 위한 사전
-  // (roleMap이 추상적 역량 카테고리라면, SKILL_DICT는 실제 도구·기술 명칭)
   const SKILL_DICT = {
     '사무행정':      ['엑셀', 'Excel', '파워포인트', 'PowerPoint', '워드', '한글', 'ERP', '그룹웨어', '전자결재', '문서작성', '일정관리'],
     '회계·경리':      ['엑셀', 'Excel', '회계프로그램', '더존', 'SAP', 'ERP', '전표처리', '세무', '결산', '자금관리'],
@@ -705,7 +699,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return unique([...found, ...softFound]).slice(0, 8);
   }
 
-  // 자기소개서 문장을 "개선이 필요한 문장(weak)"과 "이미 잘 작성된 문장(strong)"으로 분류
   function classifyLetterSentences(sentences) {
     const weak = [];
     const strong = [];
@@ -727,11 +720,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function countQuant(text) { return (text.match(/\d+[.,]?\d*\s*(%|명|건|회|개월|년|시간|원|개|배)/g) || []).length; }
   function countVerbs(text) { return (text.match(/(기획|관리|개선|분석|운영|협업|제작|지원|해결|달성|조율|작성|정리|점검|구축|단축|향상)/g) || []).length; }
 
-  // ※ 아래 STAR(상황-역할-행동-성과)·두괄식 작성 원칙은 링커리어 등 취업 커뮤니티에서
-  //    공통적으로 안내하는 합격 자소서 작성법을 일반화한 기준입니다. 저작권 보호를 위해
-  //    특정 합격 자소서의 문장을 그대로 가져오지 않고, 이 원칙을 자동 첨삭 로직에 반영했습니다.
-
-  // 수정안에 사용할 다양한 행동·성과 표현 (인덱스별 순환으로 각 수정안이 서로 다르게 생성됨)
   const PERF_POOL = [
     '업무 처리 정확도를 높이고', '데이터 누락률을 최소화하며',
     '업무 프로세스를 간소화하고', '협업 소통 효율을 향상시키며',
@@ -744,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '구체적 처리 결과로 보여드리겠습니다.',
     '데이터 기반 실무 기여를 입증하겠습니다.'
   ];
-  // 자기소개서 원본 문장에서 의미 있는 키워드를 추출하는 함수 (수정안에 원본 내용 반영)
+
   const STOPWORDS = new Set(['저는','저의','그리고','또한','뿐만','아니라','위해','통해','있는','있습니다','하겠습니다','합니다','하는','하고','있어','싶어','이러한','이렇게','등을','등의','수','있도록','하고자','위하여','않고','하지','같은','정도','부분','경우','때문','대한','관한','그리고','바탕으로','통해서']);
   function extractKeyPhrase(s) {
     const ws = words(s).filter(w => !STOPWORDS.has(w) && w.length >= 2);
@@ -756,8 +744,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fillTool = tools || (role === '디자인' ? 'Photoshop·Illustrator' : role === 'IT·개발' ? 'Java·Python·SQL' : 'Excel·OA 프로그램');
     const roleSkills = roleMap[role] || roleMap['기타'];
 
-    // 1순위: 자기소개서 문장 중 개선이 필요한 문장을 찾은 만큼 모두 첨삭 (이력서 문장은 절대 사용하지 않음)
-    // 각 문장을 개별 분석하여 서로 다른 수정안(개선문장)과 첨삭이유를 생성합니다.
     weakSentences.forEach((s, idx) => {
       const matchedPhrase = VAGUE_PHRASES.find(v => s.includes(v));
       const isTooLong = s.length > 75;
@@ -769,24 +755,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const perf = PERF_POOL[idx % PERF_POOL.length];
       const closing = CLOSING_POOL[idx % CLOSING_POOL.length];
 
-      // 수정안(개선문장): 4가지 다른 문장 구조를 순환하며 원본 키워드와 직무 역량을 반영
       let after;
       switch (idx % 4) {
-        case 0: // 역량 중심 두괄식 구성
+        case 0:
           after = `"${role} 직무 핵심 역량인 ${skill1}${skill2 ? ' 및 ' + skill2 : ''}을(를) 바탕으로, ${keyPhrase} 과업을 ${perf} ${closing}"`;
           break;
-        case 1: // 도구·기술 활용 중심
+        case 1:
           after = `"${fillTool}을(를) 활용한 실무 경험을 통해, ${keyPhrase} 업무를 ${perf} 정량적 지표(처리 건수, 정확도, 효율 개선율)로 ${closing}"`;
           break;
-        case 2: // STAR(상황-역할-행동-성과) 구조
+        case 2:
           after = `"${role} 직무 수행 시 ${skill1} 역량을 발휘하여, ${keyPhrase} 과제를 주도적으로 수행하고 ${perf} 결과를 수치로 보여드리겠습니다."`;
           break;
-        case 3: // 문제해결·기여도 중심
+        case 3:
           after = `"${fillTool} 역량과 ${skill1} 경험을 바탕으로, 실무에서 발생하는 문제를 ${perf} 기여도를 구체적 데이터로 ${closing}"`;
           break;
       }
 
-      // 첨삭이유: 각 문장의 구체적 문제점을 개별 진단하여 서로 다른 이유 작성
       const issues = [];
       if (matchedPhrase) issues.push(`'${matchedPhrase}' 같은 추상적 다짐 표현`);
       if (isTooLong) issues.push(`문장 길이(${s.length}자)가 과도하게 김`);
@@ -795,7 +779,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let reason;
       if (issues.length >= 2) {
-        // 복합 문제: 여러 문제가 결합된 문장 — 조합형 첨삭이유
         reason = `이 문장은 ${issues.join(', ')} 등 ${issues.length}가지 문제가 함께 나타납니다. 결론(핵심 역량)을 먼저 제시하는 두괄식 구성과 STAR(상황-행동-성과) 원칙을 적용하여, ${issues[0]}을(를) 구체적 행동과 수치 성과로 교체했습니다. 원본의 핵심 의도인 '${keyPhrase}'를 유지하면서 ${skill1} 역량을 자연스럽게 연결했습니다.`;
       } else if (matchedPhrase) {
         reason = `'${matchedPhrase}'와 같은 추상적 다짐 표현은 채용담당자에게 구체적 인상을 남기기 어렵습니다. 결론(핵심 역량)을 먼저 제시하는 두괄식 구성과 상황-행동-정량적 성과 순서(STAR 구조)로 재작성했습니다. 원본의 의도인 '${keyPhrase}'를 유지하면서 ${skill1} 역량을 구체적으로 연결하여 신뢰도를 높였습니다.`;
@@ -813,7 +796,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // 2순위: 자기소개서 내용 자체가 부족한 경우(문장 없음), 직무 표준 패턴 기반 참고 예시 제공
     if (list.length === 0) {
       list.push({
         before: '"해당 직무 업무를 적극적인 자세로 배우고 성과를 이끌어내겠습니다."',
@@ -845,10 +827,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const letterSentences = splitSentences(cleanLetter);
     const allSentences = resumeSentences.concat(letterSentences);
 
-    /* ---------- 서류분석 (4항목) ---------- */
-    // ※ 항목 분류는 이력서+자기소개서 전체를 참고하되, 아래 "수정안(Before&After)"은
-    //    이력서에 남아있을 수 있는 이름·생년월일 등 개인정보 노출을 막기 위해
-    //    자기소개서(letterSentences) 문장만을 대상으로 생성합니다.
     const cats = categorize(allSentences);
     const keys = roleMap[role] || roleMap['기타'];
     const postWords = unique(words(cleanPosting));
@@ -864,14 +842,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const quantCount = countQuant(combined);
     const verbCount = countVerbs(combined);
-    // 수정안 대상 문장은 자기소개서에서만 탐지 (이력서에는 이름·생년월일 등 개인정보가 남아있을 수 있음)
     const { weak: weakSentences, strong: strongSentences } = classifyLetterSentences(letterSentences);
     const vagueSentences = weakSentences.filter(s => VAGUE_PHRASES.some(v => s.includes(v)));
     const tooLong = letterSentences.filter(s => s.length > 75);
 
     const categoriesFoundCount = CATS.filter(c => cats[c.key].length > 0).length;
 
-    /* ---------- 직무적합도 점수 ---------- */
     let score = 40
       + categoriesFoundCount * 6
       + Math.min(roleMatched.length, 5) * 5
@@ -882,7 +858,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     $('displayRoleLevel').textContent = `${role} 직무 / ${level} 지원${isMatch ? ' (채용공고 맞춤)' : ''}`;
 
-    // 직무별 링커리어 합격 자소서 검색 링크 (실제 자소서 원문을 가져오지 않고, 링크만 안내)
     const linkareerLinkEl = $('linkareerLink');
     if (linkareerLinkEl) {
       linkareerLinkEl.href = `https://linkareer.com/cover-letter/search?keyword=${encodeURIComponent(role)}&tab=all`;
@@ -908,8 +883,6 @@ document.addEventListener('DOMContentLoaded', () => {
     $('categoryGrid').innerHTML = CATS.map(c => {
       const items = cats[c.key];
 
-      // 핵심역량 카드는 실제 직무 툴/기술명을 칩 형태로 우선 제시하고,
-      // 근거 문장은 보조적으로 짧게만 붙인다.
       if (c.key === 'skill') {
         if (detectedSkills.length === 0 && items.length === 0) {
           return `<div class="cat-card empty">
@@ -1013,7 +986,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `).join('');
 
-    // 잘 작성된 문장은 그대로 칭찬하며 보여준다 (정량 성과 + 행동 동사가 함께 있는 문장)
     const goodBoxEl = $('goodSentenceBox');
     if (goodBoxEl) {
       if (strongSentences.length) {
